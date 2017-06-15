@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:main_pcb-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -482,17 +483,6 @@ $EndComp
 Text Label 7200 2550 2    60   ~ 0
 LED
 $Comp
-L DRV8834_Breakout U5
-U 1 1 5942CC58
-P 8600 4050
-F 0 "U5" H 8600 4000 60  0000 C CNN
-F 1 "DRV8834_Breakout" H 8600 5000 60  0000 C CNN
-F 2 "custom_footprints:DRV8834Breakout" H 8600 4050 60  0001 C CNN
-F 3 "" H 8600 4050 60  0000 C CNN
-	1    8600 4050
-	1    0    0    -1  
-$EndComp
-$Comp
 L VDD #PWR019
 U 1 1 5942D4E4
 P 9150 3250
@@ -577,17 +567,6 @@ Text Label 8050 3850 2    60   ~ 0
 STEP1
 Text Label 8050 3950 2    60   ~ 0
 DIR1
-$Comp
-L DRV8834_Breakout U6
-U 1 1 59431376
-P 8600 5400
-F 0 "U6" H 8600 5350 60  0000 C CNN
-F 1 "DRV8834_Breakout" H 8600 6350 60  0000 C CNN
-F 2 "custom_footprints:DRV8834Breakout" H 8600 5400 60  0001 C CNN
-F 3 "" H 8600 5400 60  0000 C CNN
-	1    8600 5400
-	1    0    0    -1  
-$EndComp
 $Comp
 L VDD #PWR023
 U 1 1 5943137C
@@ -688,4 +667,26 @@ Wire Wire Line
 	1300 3150 1950 3150
 Wire Wire Line
 	4250 3450 3950 3450
+$Comp
+L DRV8834_Breakout U5
+U 1 1 59430826
+P 8600 4050
+F 0 "U5" H 8600 4000 60  0000 C CNN
+F 1 "DRV8834_Breakout" H 8600 5000 60  0000 C CNN
+F 2 "custom_footprints:DRV8834Breakout" H 8600 4050 60  0001 C CNN
+F 3 "" H 8600 4050 60  0000 C CNN
+	1    8600 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L DRV8834_Breakout U6
+U 1 1 59430923
+P 8600 5400
+F 0 "U6" H 8600 5350 60  0000 C CNN
+F 1 "DRV8834_Breakout" H 8600 6350 60  0000 C CNN
+F 2 "custom_footprints:DRV8834Breakout" H 8600 5400 60  0001 C CNN
+F 3 "" H 8600 5400 60  0000 C CNN
+	1    8600 5400
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

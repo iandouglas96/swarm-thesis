@@ -3,7 +3,7 @@
   (general
     (links 2)
     (no_connects 0)
-    (area 132.924999 101.924999 152.075001 120.075001)
+    (area 0 0 0 0)
     (thickness 1.6)
     (drawings 4)
     (tracks 2)
@@ -282,7 +282,7 @@
   (gr_line (start 133 120) (end 152 120) (angle 90) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 133 102) (end 133 120) (angle 90) (layer Edge.Cuts) (width 0.15))
 
-  (segment (start 142 110) (end 150 110) (width 0.5) (layer B.Cu) (net 1) (status C00000))
-  (segment (start 142 112.54) (end 150 112.54) (width 0.5) (layer B.Cu) (net 2) (status C00000))
+  (segment (start 142 110) (end 150 110) (width 0.5) (layer F.Cu) (net 1) (status C00000))
+  (segment (start 142 112.54) (end 150 112.54) (width 0.5) (layer F.Cu) (net 2) (status C00000))
 
 )
