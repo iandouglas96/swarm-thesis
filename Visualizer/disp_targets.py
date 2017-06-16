@@ -21,7 +21,7 @@ def main():
     #Start pygame
     pygame.init()
     #Setup window
-    screen = pygame.display.set_mode((600, 300),0,32)
+    screen = pygame.display.set_mode((600, 600),0,32)
     pygame.display.set_caption('Virtual Force Exterted')
 
     #Set up serial connection
