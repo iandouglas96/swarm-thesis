@@ -6,6 +6,7 @@ struct TARGET {
   int direction;
   int bin;
 };
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up...");
@@ -30,7 +31,6 @@ void loop() {
       Serial.print(", ");
     }
     Serial.println();
-
     //This must be called on a completed scan after the copy completes
     resetScan();
   }
