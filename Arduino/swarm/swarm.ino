@@ -20,7 +20,7 @@ void loop() {
   //Repeating commands
   struct TARGET * newTargets = targetScan();
   if (newTargets != NULL) {
-    //We have a new set of targets!  Copy them into the permanent buffer
+    //We have a new set of targets!  Print them out
     for (int i=0; i<MAX_TARGETS; i++) {
       Serial.print(newTargets[i].magnitude);
       Serial.print(", ");

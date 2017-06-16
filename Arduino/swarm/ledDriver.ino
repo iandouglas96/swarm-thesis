@@ -1,6 +1,6 @@
 
 /** 
- *  Set up 38kHz timer driver
+ *  Set up modulated LED driver
  *  Modified from from http://shawnhymel.com/649/learning-the-teensy-lc-manual-pwm/
  *  
  *  Output on pin 6
