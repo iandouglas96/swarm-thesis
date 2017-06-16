@@ -14,7 +14,8 @@ void setup() {
   setupDetector();
   
   setupLedDriver();
-  setBeacon(true);
+  //start up at 1kHz
+  setBeacon(1000);
 }
 
 void loop() {

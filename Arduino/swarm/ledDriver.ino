@@ -17,8 +17,8 @@ void setupLedDriver() {
   FTM0_CNT = 0;
   
   // Set overflow value (modulo)
-  // (48 MHz) * (1 prescaler) / 38kHz = 1263 = 0x4EF
-  FTM0_MOD = 0x04EF;
+  // (48 MHz) * (1 prescaler) / 1kHz
+  FTM0_MOD = 48000000/1000;
   
   // Set TPM0_SC register
   // Bits | Va1ue | Description
@@ -51,8 +51,16 @@ void setupLedDriver() {
 }
 
 //Turn on or off the modulated IR led
-void setBeacon(bool on) {
-  if (on) {
+//freq in Hz.  set to 0 to turn off
+void setBeacon(int freq) {
+  if (freq != 0) {
+    //Set oscillation frequency
+    FTM0_MOD = 48000000/freq;
+    // Set PWM value (0 - 65535) to TPM0_C4V
+    // Set to overflow over 2: 50% duty cycle
+    FTM0_C4V = (48000000/freq) / 2;
+    
+    //Turn on modulation
     // Set PORTD_PCR4 register (Teensy LC - pin 6)
     // Set mux to 4: FTM0_CH4 output
     *portConfigRegister(6) = PORT_PCR_MUX(4);
