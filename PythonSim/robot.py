@@ -30,49 +30,56 @@ class Robot(pygame.sprite.Sprite):
         self.newpos = self.pos
         self.rect.center = self.pos
 
+        #offset time used to simulate async scans
+        self.offset = random.randrange(20)
+        self.count = 0
+
         print "Robot initialized at "+str(x)+", "+str(y)
 
     def calc_force(self, robots):
-        self.image.fill((255,255,255))
-        pygame.draw.ellipse(self.image, (255,0,0), [20,20,10,10], 1)
+        #only allow force to be calculated once every so often
+        if (self.offset+20 == self.count):
+            #Assemble vector
+            force = []
+            force.append(0)
+            force.append(0)
 
-        #Assemble vector
-        force = []
-        force.append(0)
-        force.append(0)
+            for r in robots:
+                xcomp = r.get_pos()[0]-self.pos[0]
+                ycomp = r.get_pos()[1]-self.pos[1]
 
-        for r in robots:
-            xcomp = r.get_pos()[0]-self.pos[0]
-            ycomp = r.get_pos()[1]-self.pos[1]
+                fdist = math.sqrt(xcomp**2 + ycomp**2)
+                if (fdist > 0.001):
+                    #Add randomness
+                    #fdist = math.sqrt((xcomp+random.uniform(-2,2))**2 + (ycomp+random.uniform(-2,2))**2)
+                    #Process further if we aren't comparing to ourselves
+                    fdir = (xcomp/fdist, ycomp/fdist)
 
-            fdist = math.sqrt(xcomp**2 + ycomp**2)
-            if (fdist > 0.001):
-                #Add randomness
-                #fdist = math.sqrt((xcomp+random.uniform(-2,2))**2 + (ycomp+random.uniform(-2,2))**2)
-                #Process further if we aren't comparing to ourselves
-                fdir = (xcomp/fdist, ycomp/fdist)
+                    if (fdist < 30):
+                        #Very strong repulsive force
+                        fmag = (fdist-30)/10
+                    elif (fdist > 30 and fdist < 100):
+                        #Weak(er) attraction
+                        fmag = (fdist-35)/40
+                    else:
+                        fmag = 0
 
-                if (fdist < 30):
-                    #Very strong repulsive force
-                    fmag = -((fdist-30)**2)/40
-                elif (fdist > 30 and fdist < 45):
-                    #Weak(er) attraction
-                    fmag = ((35-fdist)**2)/100
-                else:
-                    fmag = 0
+                    force[0] += fmag * fdir[0]
+                    force[1] += fmag * fdir[1]
 
-                force[0] += fmag * fdir[0]
-                force[1] += fmag * fdir[1]
+            self.push(force[0],force[1],2)
+            self.count = self.offset
 
-        xforce, yforce = self.mag_limit(force[0], force[1], 2)
+            print str(self.id)+" updated\n"
 
-        self.push(xforce,yforce,2)
+        self.count += 1
 
     def stop(self):
         self.momentum = [0,0]
 
     def push(self, xf, yf, limit):
-        self.momentum = self.mag_limit(xf+self.momentum[0], yf+self.momentum[1], limit)
+        print str(xf)+" "+str(yf)
+        self.momentum = self.mag_limit(xf, yf, limit)
 
     def update(self):
         self.pos = self.pos[0]+self.momentum[0], self.pos[1]+self.momentum[1]
