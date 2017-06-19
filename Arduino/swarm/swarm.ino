@@ -12,10 +12,13 @@ void setup() {
   Serial.println("Starting up...");
 
   setupDetector();
-  
   setupLedDriver();
+  setupSteppers();
+  
   //start up at 1kHz
   setBeacon(1000);
+  //debugging only
+  setSpeeds(500,500);
 }
 
 void loop() {

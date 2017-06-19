@@ -7,34 +7,28 @@
 #ifndef PololuStepper_h
 #define PololuStepper_h
 
-#include "IntervalTimer.h"
+#include "Arduino.h"
 
 #define MIN_STEP_INTERVAL_US	5
-#define COUNT_OVERFLOW			255
+#define COUNT_OVERFLOW			1024
 
 class PololuStepper {
 	public:
 		//Create a new Stepper motor
 		PololuStepper(int, int);
 		//Run motor at a given speed
-		void setSpeed(int, int);
+		void setSpeed(int);
 		//Get the current motor speed
-		int getSpeedRight(void);
-		int getSpeedLeft(void);
+		int getSpeed(void);
+		//Needs to be called regularly
+		void step(void);
 
 	private:
-		//Counter used by step function
-		static volatile unsigned int cnt;
 		//The current motor speed
-		int speed_r;
-		int speed_l;
-		//Timer to drive steps
-		IntervalTimer timer;
-		int stepPin;
-		int dirPin;
-
-		//Method called by timer
-		static void step(void);
+		int period;
+		int stepPin, dirPin;
+		//Possible step() will get called from interrupt context
+		volatile int cnt;
 };
 
 #endif //PololuStepper_h
