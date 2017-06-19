@@ -16,17 +16,23 @@ class Robot(pygame.sprite.Sprite):
         super(Robot, self).__init__()
 
         #Create surface sprite will be drawn onto
-        self.image = pygame.Surface([50, 50])
-        self.image.fill(WHITE)
-        self.image.set_colorkey(WHITE)
+        self.original_image = pygame.Surface([50, 50])
+        self.original_image.fill(WHITE)
+        self.original_image.set_colorkey(WHITE)
         # this rect determinies the position the ball is drawn
-        self.rect = self.image.get_rect()
-        # Draw the ellipse onto the surface
-        pygame.draw.ellipse(self.image, (255,0,0), [20,20,10,10], 1)
+        self.rect = self.original_image.get_rect()
+        # Draw the rect
+        pygame.draw.rect(self.original_image, (255,0,0), [20,20,10,10], 1)
+        # Solid front just so we can tell the orientation
+        pygame.draw.rect(self.original_image, (255,0,0), [20,20,10,5], 0)
+        self.image = self.original_image
 
         self.rect = self.image.get_rect()
         self.pos = (x,y)
-        self.momentum = (0,0)
+        self.angle = 0
+        self.targetangle = 0
+        self.linearv = 0
+        self.angularv = 0
         self.newpos = self.pos
         self.rect.center = self.pos
 
@@ -45,56 +51,73 @@ class Robot(pygame.sprite.Sprite):
             force.append(0)
 
             for r in robots:
-                xcomp = r.get_pos()[0]-self.pos[0]
-                ycomp = r.get_pos()[1]-self.pos[1]
+                #only do something if this is a different robot
+                if (r.id != self.id):
+                    xcomp = r.get_pos()[0]-self.pos[0]
+                    ycomp = r.get_pos()[1]-self.pos[1]
 
-                fdist = math.sqrt(xcomp**2 + ycomp**2)
-                if (fdist > 0.001):
+                    fdist = math.sqrt(xcomp**2 + ycomp**2)
                     #Add randomness
                     #fdist = math.sqrt((xcomp+random.uniform(-2,2))**2 + (ycomp+random.uniform(-2,2))**2)
                     #Process further if we aren't comparing to ourselves
                     fdir = (xcomp/fdist, ycomp/fdist)
 
-                    if (fdist < 30):
+                    if (fdist < 50):
                         #Very strong repulsive force
-                        fmag = (fdist-30)/10
-                    elif (fdist > 30 and fdist < 100):
+                        fmag = (fdist-50)/10
+                    elif (fdist > 55 and fdist < 100):
                         #Weak(er) attraction
-                        fmag = (fdist-35)/40
+                        fmag = (fdist-55)/30
                     else:
                         fmag = 0
 
                     force[0] += fmag * fdir[0]
                     force[1] += fmag * fdir[1]
 
-            self.push(force[0],force[1],2)
-            self.count = self.offset
+            self.calc_movement(force[0], force[1])
 
-            print str(self.id)+" updated\n"
+            self.count = self.offset
 
         self.count += 1
 
-    def stop(self):
-        self.momentum = [0,0]
+    def calc_movement(self, x, y):
+        fangle = math.atan2(y,x)
+        fmag = math.sqrt(x**2 + y**2)
+        if (fmag > 2):
+            fmag = 2
 
-    def push(self, xf, yf, limit):
-        print str(xf)+" "+str(yf)
-        self.momentum = self.mag_limit(xf, yf, limit)
+        #find difference in angle
+        anglediff = fangle-self.angle
+        if (anglediff > math.pi):
+            anglediff -= 2*math.pi
+        elif (anglediff < -math.pi):
+            anglediff += 2*math.pi
+
+        #don't ever really have difference > 90 degrees, since we can reverse
+        if (anglediff > math.pi/2):
+            anglediff -= math.pi
+            fmag *= -1
+        elif (anglediff < -math.pi/2):
+            anglediff += math.pi
+            fmag *= -1
+
+        self.targetangle = self.angle+anglediff
+        self.angularv = anglediff*0.1
+        self.linearv = fmag*math.cos(anglediff)
+
+    def stop(self):
+        self.linearv = 0
+        self.angularv = 0
 
     def update(self):
-        self.pos = self.pos[0]+self.momentum[0], self.pos[1]+self.momentum[1]
+        if (math.fabs(self.angle-self.targetangle) > 0.05):
+            self.angle = self.angle + self.angularv
+        self.linearv *= 0.95
+
+        self.pos = self.pos[0]+self.linearv*math.cos(self.angle), self.pos[1]+self.linearv*math.sin(self.angle)
+        self.image = pygame.transform.rotate(self.original_image, -90-math.degrees(self.angle))
+        self.rect = self.image.get_rect()
         self.rect.center = self.pos
-
-    def mag_limit(self, x, y, limit):
-        mag = math.sqrt(x**2 + y**2)
-        if (mag != 0):
-            dir = (x/mag, y/mag)
-        else:
-            dir = (0,0)
-
-        if (mag > limit):
-            mag = limit
-        return (dir[0]*mag, dir[1]*mag)
 
     def get_pos(self):
         return self.pos

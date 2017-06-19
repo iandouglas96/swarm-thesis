@@ -60,4 +60,4 @@ def main(num_robots, width, height):
 
         clock.tick(30)
 
-main(2, 500, 500)
+main(5, 500, 500)
