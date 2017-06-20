@@ -13,18 +13,18 @@ AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 const int FREQ_BINS[NUM_FREQ_BINS] = {23, 28};
 //Array to keep track of the last values in each bin (for peak detection).  2d array for each fft
 float LastMagnitude[2][NUM_FREQ_BINS];
-//Boolean (true if we are _ascending_ a peak) 2d array for each fft
-bool PeakDetected[2][NUM_FREQ_BINS];
-//Minimum peak height
-#define DETECTOR_FLOOR 0.05
+//Starting magnitude of a peak
+float PeakDetected[2][NUM_FREQ_BINS];
+//Top of noise floor
+#define DETECTOR_FLOOR 0.02
+//Minimum height of peak
+#define MIN_PEAK_HEIGHT 0.04
 
 //Number of degrees servo lags behind stated value (experimentally determined)
-#define SERVO_LAG_COMP 6
+#define SERVO_LAG_COMP 8
 #define SERVO_SPEED 2
 //Current position of servo (degrees)
 int pos;
-//Amount to move servo each FFT (degrees)
-unsigned int inc;
 //Direction the servo is moving (+- 1)
 int dir;
 
@@ -42,7 +42,7 @@ void resetScan() {
   }
   for (int side=0; side<2; side++) {
     for (int i=0; i<NUM_FREQ_BINS; i++) {
-      PeakDetected[side][i] = false;
+      PeakDetected[side][i] = 0;
       LastMagnitude[side][i] = 0;
     }
   }
@@ -76,16 +76,18 @@ struct TARGET * targetScan() {
       for (int i=0; i<NUM_FREQ_BINS; i++) {
         float binMag = fft[side].read(FREQ_BINS[i]-1,FREQ_BINS[i]+1);
         //Do we have a peak?
-        if (binMag > DETECTOR_FLOOR && binMag > LastMagnitude[side][i]) {
+        if (binMag > DETECTOR_FLOOR && binMag >= LastMagnitude[side][i] && PeakDetected[side][i]==0) {
           //We are going up a peak
-          PeakDetected[side][i] = true;
-          TargetsInProgress[NumTargets[side]].magnitude = binMag;
+          PeakDetected[side][i] = binMag;
+        } else if (binMag < LastMagnitude[side][i] && PeakDetected[side][i]!=0 && LastMagnitude[side][i]-PeakDetected[side][i] > MIN_PEAK_HEIGHT) {
+          TargetsInProgress[NumTargets[side]].magnitude = LastMagnitude[side][i];
           TargetsInProgress[NumTargets[side]].direction = (side==0 ? pos : pos+180);
           TargetsInProgress[NumTargets[side]].bin = i;
-        } else if (binMag < LastMagnitude[side][i] && PeakDetected[side][i]==true) {
           //We just started going down the peak
-          PeakDetected[side][i] = false;
-          NumTargets[side]++;
+          PeakDetected[side][i] = 0;
+          if (NumTargets[side] < (side+1)*(MAX_TARGETS/2)-1) {
+            NumTargets[side]++;
+          }
         }
         LastMagnitude[side][i] = binMag;
       }
@@ -95,7 +97,7 @@ struct TARGET * targetScan() {
     //Move servo to next location (compensate for servo lag)
     servo.write(pos+(SERVO_LAG_COMP*dir));
 
-    if (pos > (180-SERVO_SPEED) || pos < SERVO_SPEED) {  
+    if (pos > (180-SERVO_SPEED) || pos < SERVO_SPEED) {
       //Get ready for next scan
       dir *= -1;
       return TargetsInProgress;

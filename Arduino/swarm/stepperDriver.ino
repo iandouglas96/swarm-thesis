@@ -19,8 +19,8 @@ IntervalTimer StepperTimer;
 
 //Configure the stepper timings
 void setupSteppers() {
-  StepperTimer.begin(timerStep, STEPPER_TIMER_PERIOD);
-  StepperTimer.priority(STEPPER_TIMER_PRIORITY);
+  //StepperTimer.begin(timerStep, STEPPER_TIMER_PERIOD);
+  //StepperTimer.priority(STEPPER_TIMER_PRIORITY);
 }
 
 //Set the speeds of both steppers.
