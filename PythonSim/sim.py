@@ -23,14 +23,15 @@ def main(num_robots, width, height):
     # w = Wall(400,300,200,20)
     # walls.add(w)
 
+    #Create Leader
+    #Do this first, so leader has id=0
+    leader = Leader(width/2, height/2)
+    robots.add(leader)
+
     #Create robots
     for i in range(0, num_robots):
         r = Robot(width/2 + random.uniform(-100,100), height/2 + + random.uniform(-100,100))
         robots.add(r)
-
-    #Create Leader
-    leader = Leader(width/2, height/2)
-    robots.add(leader)
 
     print "Starting Simulation"
     while (True):

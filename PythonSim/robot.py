@@ -51,7 +51,7 @@ class Robot(pygame.sprite.Sprite):
             force.append(0)
 
             for r in robots:
-                #only do something if this is a different robot
+                #only do something if this is a different robot from self
                 if (r.id != self.id):
                     xcomp = r.get_pos()[0]-self.pos[0]
                     ycomp = r.get_pos()[1]-self.pos[1]
@@ -59,10 +59,13 @@ class Robot(pygame.sprite.Sprite):
                     fdist = math.sqrt(xcomp**2 + ycomp**2)
                     #Add randomness
                     #fdist = math.sqrt((xcomp+random.uniform(-2,2))**2 + (ycomp+random.uniform(-2,2))**2)
-                    #Process further if we aren't comparing to ourselves
                     fdir = (xcomp/fdist, ycomp/fdist)
 
-                    if (fdist < 50):
+                    if (r.id == 0 and fdist < 200):
+                        #The robot we are seeing is the leader
+                        #strong attraction
+                        fmag = (fdist-55)/30
+                    elif (fdist < 50):
                         #Very strong repulsive force
                         fmag = (fdist-50)/10
                     elif (fdist > 55 and fdist < 100):
