@@ -1,7 +1,7 @@
 (export (version D)
   (design
-    (source U:\Research\Swarms\PCB\main_pcb.sch)
-    (date "6/21/2017 12:18:41 PM")
+    (source U:/Research/Swarms/PCB/main_pcb.sch)
+    (date "6/21/2017 3:19:12 PM")
     (tool "Eeschema 4.0.2-stable")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -459,16 +459,16 @@
   (libraries
     (library (logical linear)
       (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\linear.lib"))
-    (library (logical device)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\device.lib"))
+    (library (logical conn)
+      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\conn.lib"))
     (library (logical teensy_3.1)
       (uri U:\Research\Swarms\PCB\Teensy-3.1-master\teensy_3.1.lib))
     (library (logical rfm69_breakout)
       (uri U:\Research\Swarms\PCB\rfm69_breakout.lib))
     (library (logical drv8834_breakout)
       (uri U:\Research\Swarms\PCB\drv8834_breakout.lib))
-    (library (logical conn)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\conn.lib")))
+    (library (logical device)
+      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\device.lib")))
   (nets
     (net (code 1) (name "Net-(U6-Pad10)")
       (node (ref U6) (pin 10)))
