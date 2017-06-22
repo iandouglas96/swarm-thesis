@@ -25,7 +25,7 @@ def main():
     pygame.display.set_caption('Virtual Force Exterted')
 
     #Set up serial connection
-    ser = serial.Serial('COM4')
+    ser = serial.Serial('COM6')
 
     while(True):
         for event in pygame.event.get():
