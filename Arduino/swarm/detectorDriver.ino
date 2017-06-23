@@ -68,7 +68,7 @@ struct TARGET * targetScan() {
   // Have we completed scanning a bin?
   if (fft[0].available() && fft[1].available()) {   
     //For debugging
-    Serial.println(fft[0].read(22,24));
+    //Serial.println(fft[0].read(22,24));
 
     //Check each fft, one for each "side".  If side=1, add 180 to the direction
     for (int side=0; side<2; side++) {
