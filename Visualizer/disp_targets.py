@@ -48,7 +48,7 @@ def main():
         #Scan through all the detected objects and draw them
         for i in range(0, len(positions)-1, 3):
             if (positions[i] != 0):
-                dist = 4*-math.log(positions[i]/1.8956)*14.9
+                dist = 4*-math.log(positions[i]/1.1084)/0.05
                 theta = math.radians(positions[i+1])
                 group = positions[i+2]
                 x = 300+int(dist*math.cos(theta))

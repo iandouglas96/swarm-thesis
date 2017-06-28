@@ -7,7 +7,7 @@
 #define STEPPER_PIN_DIR_L 20
 
 //Timer period (in us)
-#define STEPPER_TIMER_PERIOD 100
+#define STEPPER_TIMER_PERIOD 300
 //Timer priority (out of 255.  Use lowish priority, since not that timing critical)
 #define STEPPER_TIMER_PRIORITY 145
 
@@ -19,14 +19,15 @@ IntervalTimer StepperTimer;
 
 //Configure the stepper timings
 void setupSteppers() {
-  //StepperTimer.begin(timerStep, STEPPER_TIMER_PERIOD);
-  //StepperTimer.priority(STEPPER_TIMER_PRIORITY);
+  StepperTimer.begin(timerStep, STEPPER_TIMER_PERIOD);
+  StepperTimer.priority(STEPPER_TIMER_PRIORITY);
 }
 
 //Set the speeds of both steppers.
 void setSpeeds(int speedR, int speedL) {
   StepperR.setSpeed(speedR);
-  StepperL.setSpeed(speedL);
+  //Negative because stepper connected backwards
+  StepperL.setSpeed(-speedL);
 }
 
 //Call the step() functions at regular timing interval (defined by IntervalTimer)

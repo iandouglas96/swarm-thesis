@@ -18,7 +18,7 @@ float PeakDetected[2][NUM_FREQ_BINS];
 //Top of noise floor
 #define DETECTOR_FLOOR 0.02
 //Minimum height of peak
-#define MIN_PEAK_HEIGHT 0.04
+#define MIN_PEAK_HEIGHT 0.05
 
 //Number of degrees servo lags behind stated value (experimentally determined)
 #define SERVO_LAG_COMP 8
@@ -68,8 +68,8 @@ struct TARGET * targetScan() {
   // Have we completed scanning a bin?
   if (fft[0].available() && fft[1].available()) {   
     //For debugging
-    //Serial.println(fft[0].read(22,24));
-
+    //Serial.println(fft[1].read(22,24));
+    
     //Check each fft, one for each "side".  If side=1, add 180 to the direction
     for (int side=0; side<2; side++) {
       //Scan through each bin
@@ -92,10 +92,10 @@ struct TARGET * targetScan() {
         LastMagnitude[side][i] = binMag;
       }
     }
-
+    
     pos += SERVO_SPEED*dir;
     //Move servo to next location (compensate for servo lag)
-    servo.write(pos+(SERVO_LAG_COMP*dir));
+    servo.write(180-(pos+(SERVO_LAG_COMP*dir)));
 
     if (pos > (180-SERVO_SPEED) || pos < SERVO_SPEED) {
       //Get ready for next scan
