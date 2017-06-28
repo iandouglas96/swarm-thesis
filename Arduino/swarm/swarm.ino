@@ -10,7 +10,10 @@ struct TARGET {
 //Constants relating to swarm behavior
 #define TARGET_SEPARATION 25
 #define ATTRACTION_CONST 1
-#define REPULSION_CONST 1
+#define REPULSION_CONST 2
+
+#define ANGULAR_VELOCITY_CONST 50
+#define LINEAR_VELOCITY_CONST 10
 
 void setup() {
   Serial.begin(9600);
@@ -59,11 +62,16 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
         force_mag = (dist-TARGET_SEPARATION)*REPULSION_CONST;
       }
 
-      //Get x and y force components.  Convert angle to radians first
+      //Get x and y force components so they can be added.  Convert angle to radians first
       forcefwd += force_mag*cos(targets[i].direction*0.01745);
       forceside += force_mag*sin(targets[i].direction*0.01745);
     }
   }
+
+  Serial.print("force: ");
+  Serial.print(forcefwd);
+  Serial.print(", ");
+  Serial.println(forceside);
 
   calcMovement(forcefwd, forceside);
 }
@@ -83,9 +91,36 @@ void printTargets(TARGET targets[MAX_TARGETS]) {
 
 //Convert force vector to speed commands for motor drivers
 void calcMovement(float forcefwd, float forceside) {
-  Serial.print(forcefwd);
-  Serial.print(", ");
-  Serial.println(forceside);
+  if (forcefwd != 0 || forceside != 0) {
+    //Go back to circular coordinates
+    //1.5708 rad = 90 degrees, to make 0 degrees be forwards
+    float force_angle = 1.5708-atan2(forcefwd, forceside);
+    float force_mag = sqrt(forcefwd*forcefwd + forceside*forceside);
+  
+    //difference should be +- 90 degrees, since we can reverse
+    while (force_angle > 1.5708) {
+      force_angle -= 3.1416;
+      force_mag *= -1;
+    }
+    while (force_angle < -1.5708) {
+      force_angle += 3.1416;
+      force_mag *= -1;
+    }
+  
+    int angularv = (int)(ANGULAR_VELOCITY_CONST * force_angle);
+    int linearv = (int)(LINEAR_VELOCITY_CONST * force_mag * cos(force_angle));
+  
+    Serial.println(force_angle);
+    Serial.print("move: ");
+    Serial.print(angularv);
+    Serial.print(", ");
+    Serial.println(linearv);
+
+    setSpeeds(linearv-angularv,linearv+angularv);
+  } else {
+    //stop
+    setSpeeds(0,0);
+  }
 }
 
 //Convert FFT magnitude values to distances.
