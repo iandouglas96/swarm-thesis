@@ -11,13 +11,13 @@
 - Response to dump (0x10) would be `00 10 <data>`
 
 ## Command list
-| Command                 | Type | Mode              | Description                                 |
-|-------------------------|------|-------------------|---------------------------------------------|
-| dump                    | get  | <id> or broadcast | Get robot configuration                     |
-| set_id <id>             | set  | <id>              | Set robot's ID (0 to 255)                   |
-| verbose on/off          | cmd  | <id> or broadcast | Tell robot to send constant status updates  |
-| set_const <const> <val> | set  | <id> or broadcast | Set specified calibration constant to value |
-| stop                    | cmd  | <id> or broadcast | Shut down motors                            |
-| drive <r_spd> <l_spd>   | cmd  | <id>              | Manually set motor speeds                   |
-| set_channel <channel>   | cmd  | <id>              | Set frequency beacon channel                |
-| auto                    | cmd  | <id>              | Reset manual command overrides              |
+| Command                 | Type | Mode            | Description                                 |
+|-------------------------|------|-----------------|---------------------------------------------|
+| dump                    | get  | id or broadcast | Get robot configuration                     |
+| set_id <id_num>         | set  | id              | Set robot's ID (0 to 255)                   |
+| verbose on/off          | cmd  | id or broadcast | Tell robot to send constant status updates  |
+| set_const <const> <val> | set  | id or broadcast | Set specified calibration constant to value |
+| stop                    | cmd  | id or broadcast | Shut down motors                            |
+| drive <r_spd> <l_spd>   | cmd  | id              | Manually set motor speeds                   |
+| set_channel <channel>   | cmd  | id              | Set frequency beacon channel                |
+| auto                    | cmd  | id              | Reset manual command overrides              |
