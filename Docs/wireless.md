@@ -4,11 +4,13 @@
 - Command structured as series of unsigned chars
   - Command (and args) a single char as defined by an enum (starting with 0x10)
   - Characters below 0x10 are reserved for special use
-- To drive straight forwards (drive is 0x08), then, would be `15 FF FF`
+  - To drive straight forwards (drive is 0x08), then, would be `15 FF FF`
 
-- Responses encode the original command.
-- 0x00 signals a response, followed by the original command and then the payload
-- Response to dump (0x10) would be `00 10 <data>`
+- Responses
+  - Responses encode the original command.
+  - 0x00 signals a response, followed by the original command and then the payload
+  - Response to dump (0x10) would be `00 10 <data>`
+  - 0x01 signals a status update, followed by the update type
 
 ## Command list
 | Command                 | Type | Mode            | Description                                 |

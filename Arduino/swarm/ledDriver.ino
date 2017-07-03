@@ -30,7 +30,7 @@ void setupLedDriver() {
   // 2-0  |  000  | PS: Prescale = 1
   FTM0_SC = 0b011001000;
   
-  // Set TPM0_C4SC register (Teensy LC - pin 6)
+  // Set TPM0_C4SC register (Pin 6 on the Teensy)
   // As per the note on p. 575, we must disable the channel
   // first before switching channel modes. We also introduce
   // a magical 1 us delay to allow the new value to take.

@@ -1,24 +1,21 @@
+#include "eeprom_structure.h"
+
 //The maximum number of trackable targets each robot can see
 #define MAX_TARGETS 10
 //Struct defining information about a target (another robot)
-struct TARGET {
+typedef struct TARGET {
   float magnitude;
   int direction;
   int bin;
 };
 
-//Constants relating to swarm behavior
-#define TARGET_SEPARATION 25
-#define ATTRACTION_CONST 1
-#define REPULSION_CONST 2
-
-#define ANGULAR_VELOCITY_CONST 50
-#define LINEAR_VELOCITY_CONST 10
+EEPROM_DATA ConstData;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up...");
 
+  setupEepromDriver();
   setupDetector();
   setupLedDriver();
   setupSteppers();
@@ -31,7 +28,7 @@ void setup() {
 
 void loop() {
   //Repeating commands
-  struct TARGET * newTargets = targetScan();
+  TARGET * newTargets = targetScan();
   if (newTargets != NULL) {
     //We have seen something, let's now act accordingly
     printTargets(newTargets);
@@ -54,7 +51,7 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
       //Note: repulsion is considered negative
       float force_mag = 0;
 
-      if (dist > TARGET_SEPARATION) {
+      if (dist > ConstData.TargetSeparation) {
         //attraction
         force_mag = (dist-TARGET_SEPARATION)*ATTRACTION_CONST;
       } else if (dist < TARGET_SEPARATION) {

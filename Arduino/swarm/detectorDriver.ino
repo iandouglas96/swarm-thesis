@@ -31,7 +31,7 @@ int dir;
 //Number of targets detected
 int NumTargets[2];
 //Array of targets detected (dynamic array)
-struct TARGET TargetsInProgress[MAX_TARGETS];
+TARGET TargetsInProgress[MAX_TARGETS];
 
 //Clear arrays to prepare for next scan
 //IMPORTANT: Must be manually called after targetScan returns something
@@ -64,7 +64,7 @@ void setupDetector() {
   resetScan();
 }
 
-struct TARGET * targetScan() {
+TARGET * targetScan() {
   // Have we completed scanning a bin?
   if (fft[0].available() && fft[1].available()) {   
     //For debugging
