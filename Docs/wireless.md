@@ -1,6 +1,6 @@
-#Wireless command documentation
+# Wireless command documentation
 
-##Command format
+## Command format
 - Command structured as series of unsigned chars
   - Command (and args) a single char as defined by an enum (starting with 0x10)
   - Characters below 0x10 are reserved for special use
@@ -10,7 +10,7 @@
 - 0x00 signals a response, followed by the original command and then the payload
 - Response to dump (0x10) would be `00 10 <data>`
 
-##Command list
+## Command list
 | Command                 | Type | Mode              | Description                                 |
 |-------------------------|------|-------------------|---------------------------------------------|
 | dump                    | get  | <id> or broadcast | Get robot configuration                     |
