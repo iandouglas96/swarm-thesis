@@ -33,7 +33,7 @@ void setup() {
 void loop() {
   //Do we have any new packets to process?
   if (radio.receiveDone()) {
-    Serial.print(radio.SENDERID);
+    Serial.print((char)radio.SENDERID);
     for (int i=0; i<radio.DATALEN; i++) {
       Serial.print((char)radio.DATA[i]);
     }

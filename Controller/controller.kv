@@ -1,0 +1,38 @@
+#:kivy 1.10.0
+<NodeRowEntry@BoxLayout>:
+  canvas.before:
+    Color:
+      rgba: 0.8, 0.8, 0.8, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  value: ''
+  Label:
+    text: root.value
+    color: 0.2, 0.2, 0.2, 1
+
+<NodeList>:
+  rv: node_list_view
+  BoxLayout:
+    orientation: 'vertical'
+    padding: 10
+    spacing: 10
+    width: '200dp'
+    size_hint_x: None
+    Button:
+      size_hint_y: None
+      text: 'Scan'
+      height: '56dp'
+      on_release: root.scan()
+    RecycleView:
+      id: node_list_view
+      scroll_type: ['bars', 'content']
+      bar_width: dp(10)
+      viewclass: 'NodeRowEntry'
+      RecycleBoxLayout:
+        default_size: None, dp(56)
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+        spacing: dp(2)

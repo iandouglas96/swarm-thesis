@@ -18,7 +18,7 @@ typedef struct EEPROM_DATA {
   unsigned char NodeID;
 
   //Do we want to send updates to controller?
-  boolean Verbose;
+  uint8_t Verbose;
 
   //marker to see if EEPROM has been initialized
   unsigned int Checksum;

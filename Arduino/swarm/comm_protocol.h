@@ -10,6 +10,9 @@
 //The hex value commands begin at (reserve lower values)
 #define COMMAND_BEGINNING 0x10
 
+//Send to this address to send to all robots
+#define BROADCAST_ID 255
+
 //Listing of all commands that can be sent to the robot
 typedef enum COMMAND {
   DUMP = COMMAND_BEGINNING, //Get robot config
