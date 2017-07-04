@@ -14,17 +14,27 @@ typedef struct EEPROM_DATA {
   unsigned int AngularVelocityConst;
   unsigned int LinearVelocityConst;
 
+  //Wireless related constants
+  unsigned char NodeID;
+
+  //Do we want to send updates to controller?
+  boolean Verbose;
+
   //marker to see if EEPROM has been initialized
   unsigned int Checksum;
 };
 
 //Default values for EEPROM
-const struct EEPROM_DATA EEPROM_DATA_DEFAULT = {
+const EEPROM_DATA EEPROM_DATA_DEFAULT = {
   25,               //TargetSeparation
   1,                //AttractionConst
   2,                //RepulsionConst
   50,               //AngularVelocityConst
   10,               //LinearVelocityConst
+
+  254,              //NodeID
+
+  true,             //Verbose
 
   EEPROM_CHECKSUM   //Checksum
 };

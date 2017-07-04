@@ -2,11 +2,14 @@
 
 ## Command format
 - Command structured as series of unsigned chars
+  - Commands can only be sent by controller
   - Command (and args) a single char as defined by an enum (starting with 0x10)
   - Characters below 0x10 are reserved for special use
+    -0x00 indicates a reply, 0x01 a status update, 0x0A is reserved for newline applications
   - To drive straight forwards (drive is 0x08), then, would be `15 FF FF`
 
 - Responses
+  - Can only be sent by nodes
   - Responses encode the original command.
   - 0x00 signals a response, followed by the original command and then the payload
   - Response to dump (0x10) would be `00 10 <data>`

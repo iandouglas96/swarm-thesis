@@ -20,6 +20,7 @@ void setup() {
   setupDetector();
   setupLedDriver();
   setupSteppers();
+  setupWireless();
   
   //start up at 1kHz
   setBeacon(1000);
@@ -36,6 +37,7 @@ void loop() {
     processTargets(newTargets);
     resetScan();
   }
+  checkForCommands();
   delay(1);
 }
 
@@ -66,10 +68,10 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
     }
   }
 
-  Serial.print("force: ");
+  /*Serial.print("force: ");
   Serial.print(forcefwd);
   Serial.print(", ");
-  Serial.println(forceside);
+  Serial.println(forceside);*/
 
   calcMovement(forcefwd, forceside);
 }
@@ -108,11 +110,11 @@ void calcMovement(float forcefwd, float forceside) {
     int angularv = (int)(ConstData.AngularVelocityConst * force_angle);
     int linearv = (int)(ConstData.LinearVelocityConst * force_mag * cos(force_angle));
   
-    Serial.println(force_angle);
+    /*Serial.println(force_angle);
     Serial.print("move: ");
     Serial.print(angularv);
     Serial.print(", ");
-    Serial.println(linearv);
+    Serial.println(linearv);*/
 
     setSpeeds(linearv-angularv,linearv+angularv);
   } else {
