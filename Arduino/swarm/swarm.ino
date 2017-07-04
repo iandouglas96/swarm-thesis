@@ -9,6 +9,7 @@ typedef struct TARGET {
   int bin;
 };
 
+//Config stored in EEPROM
 EEPROM_DATA ConstData;
 
 void setup() {
@@ -53,10 +54,10 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
 
       if (dist > ConstData.TargetSeparation) {
         //attraction
-        force_mag = (dist-TARGET_SEPARATION)*ATTRACTION_CONST;
-      } else if (dist < TARGET_SEPARATION) {
+        force_mag = (dist-ConstData.TargetSeparation)*ConstData.AttractionConst;
+      } else if (dist < ConstData.TargetSeparation) {
         //repulsion
-        force_mag = (dist-TARGET_SEPARATION)*REPULSION_CONST;
+        force_mag = (dist-ConstData.TargetSeparation)*ConstData.RepulsionConst;
       }
 
       //Get x and y force components so they can be added.  Convert angle to radians first
@@ -104,8 +105,8 @@ void calcMovement(float forcefwd, float forceside) {
       force_mag *= -1;
     }
   
-    int angularv = (int)(ANGULAR_VELOCITY_CONST * force_angle);
-    int linearv = (int)(LINEAR_VELOCITY_CONST * force_mag * cos(force_angle));
+    int angularv = (int)(ConstData.AngularVelocityConst * force_angle);
+    int linearv = (int)(ConstData.LinearVelocityConst * force_mag * cos(force_angle));
   
     Serial.println(force_angle);
     Serial.print("move: ");
