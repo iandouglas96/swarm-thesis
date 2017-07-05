@@ -10,7 +10,7 @@
 //ID number of control radio
 #define CONTROLLER_ID 1
 
-#define MAX_CMD_LENGTH 10
+#define MAX_CMD_LENGTH 50
 
 //We'll use ATC to save some battery, adjust power output automatically
 RFM69_ATC radio(10,0);
@@ -43,10 +43,11 @@ void loop() {
   if (Serial.available() > 0) {
     Command[CommandLength] = Serial.read();
     CommandLength++;
-    if (Command[CommandLength-1] == '\n') {
+    //First char in the command string gives the total length
+    if (CommandLength==Command[0]) {
       //We have reached the end of the command
-      //First char is the address, rest is the payload
-      radio.send(Command[0], &(Command[1]), CommandLength-2, false);
+      //Second char is the address, rest is the payload
+      radio.send(Command[1], &(Command[2]), CommandLength-2, false);
       
       CommandLength = 0;
     }

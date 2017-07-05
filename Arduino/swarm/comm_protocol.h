@@ -18,6 +18,7 @@ typedef enum COMMAND {
   DUMP = COMMAND_BEGINNING, //Get robot config
   SET_ID,                   //Set robot's ID (0 to 255)
   VERBOSE,                  //Tell robot to send constant status updates
+  SET_CONSTS,               //Set robot configuration (dump's opposite)
   SET_CONST,                //Set sepcified calibration constant to value
   STOP,                     //Shut down motors
   DRIVE,                    //Manually set motor speeds

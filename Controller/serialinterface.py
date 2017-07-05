@@ -14,8 +14,11 @@ class SerialInterface:
 
     #package and send a command
     def send_command(self, target_id, cmd, args=''):
-        #target id, followed by command and any arguments, then \n
-        payload = chr(target_id)+chr(cmd)+args+chr(0x0A)
+        #total message length, target id, followed by command and any arguments
+        payload = chr(len(args)+3)+chr(target_id)+chr(cmd)+args
+
+        print str([hex(ord(c)) for c in payload])
+
         self.ser.write(payload)
         self.ser.flush() #make sure we push out the whole command
 

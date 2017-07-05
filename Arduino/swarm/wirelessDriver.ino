@@ -28,7 +28,18 @@ void checkForCommands() {
       case DUMP:
         sendResponse(radio.SENDERID, DUMP, (char*)&ConstData, sizeof(ConstData));
         break;
-      case SET_ID:
+      case SET_CONSTS:
+        //Ok, in that case the rest of the packet is the ConstData struct
+        //Make sure it isn't corrupted or weird somehow
+        if (radio.DATALEN-1 == sizeof(ConstData)-sizeof(ConstData.Checksum)) {
+          //A bit sketchy, since radio.DATA is technically volatile.
+          //Copy radio data into our struct
+          memcpy(&ConstData, (char *)&(radio.DATA[1]), sizeof(ConstData)-sizeof(ConstData.Checksum));
+          //Save new values to EEPROM
+          saveEepromData();
+        } else {
+          sendResponse(radio.SENDERID, SET_CONSTS, (char *)&radio.DATALEN, sizeof(radio.DATALEN));
+        }
         break;
       default:
         //Unsupported command
