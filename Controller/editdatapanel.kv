@@ -1,0 +1,54 @@
+#Helper class with a box to enter stuff and a label to label it
+<DataEntry@BoxLayout>:
+  orientation: 'horizontal'
+  height: '40dp'
+  size_hint_y: None
+  label: ''
+  text_box: text_input
+  Label:
+    size_hint_x: None
+    width: '100dp'
+    #Set the label to the configured text
+    text: root.label
+  TextInput:
+    id: text_input
+    input_filter: 'int'
+    multiline: False
+
+<EditDataPanel>:
+  orientation: 'vertical'
+  DataEntry:
+    id: target_separation
+    label: 'Separation:'
+  DataEntry:
+    id: attraction_const
+    label: 'Attraction:'
+  DataEntry:
+    id: repulsion_const
+    label: 'Repulsion:'
+  DataEntry:
+    id: angular_v_const
+    label: 'Angular V:'
+  DataEntry:
+    id: linear_v_const
+    label: 'Linear V:'
+  DataEntry:
+    id: node_id
+    label: 'Node ID:'
+  BoxLayout:
+    orientation: 'horizontal'
+    height: '40dp'
+    size_hint_y: None
+    Label:
+      size_hint_x: None
+      width: '100dp'
+      #Set the label to the configured text
+      text: 'Verbose:'
+    CheckBox:
+      id: verbose
+  Button:
+    height: '40dp'
+    size_hint_y: None
+    text: 'Apply'
+  #empty widget to take up space
+  Widget:

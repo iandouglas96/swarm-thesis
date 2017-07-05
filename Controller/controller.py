@@ -9,14 +9,16 @@ from kivy.uix.label import Label
 from serialinterface import SerialInterface
 
 from nodelist import *
+from editdatapanel import *
 
 class Controller(BoxLayout):
     def __init__(self, comm):
         super(Controller, self).__init__()
         self.comm = comm
 
+    #Pass data to panel to be populated
     def new_selection(self, data):
-        print data
+        self.ids.data_panel.test(data)
 
 class ControllerApp(App):
     def build(self):

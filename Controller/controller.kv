@@ -1,13 +1,18 @@
 #:kivy 1.10.0
 #:include nodelist.kv
+#:include editdatapanel.kv
 
 <Controller>:
   id: controller
-  orientation: 'vertical'
+  orientation: 'horizontal'
   padding: 10
   spacing: 10
   size_hint_x: None
-  width: '120dp'
+  width: '500dp'
+  data_panel: data_panel
   NodeList:
-    width: 1
+    width: '120dp'
     size_hint_y: 1
+    size_hint_x: None
+  EditDataPanel:
+    id: data_panel
