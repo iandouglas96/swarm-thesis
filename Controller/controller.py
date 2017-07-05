@@ -1,3 +1,5 @@
+from constants import *
+
 from random import sample
 from string import ascii_lowercase
 
@@ -13,11 +15,13 @@ class NodeList(BoxLayout):
         self.comm = comm
 
     def scan(self):
-        #clear list
-        print self.comm.send_command(255, 0x10)
+        #scan for robots
+        self.node_list = self.comm.send_command(BROADCAST_ID, DUMP_COMMMAND)
+        print self.node_list
+        #populate list with list of detected nodes
         self.rv.data = []
-        self.rv.data = [{'value': ''.join(sample(ascii_lowercase, 6))}
-                        for x in range(50)]
+        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID])}
+                        for node in self.node_list]
 
 class ControllerApp(App):
     def build(self):
