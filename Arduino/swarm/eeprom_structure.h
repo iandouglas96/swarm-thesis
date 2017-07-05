@@ -3,7 +3,7 @@
 
 #define EEPROM_START_ADDRESS 0x00
 
-#define EEPROM_CHECKSUM 1234
+#define EEPROM_CHECKSUM 0x12345678
 
 //struct to be read/written from/to EEPROM
 typedef struct EEPROM_DATA {
@@ -18,7 +18,7 @@ typedef struct EEPROM_DATA {
   unsigned char NodeID;
 
   //Do we want to send updates to controller?
-  uint8_t Verbose;
+  boolean Verbose;
 
   //marker to see if EEPROM has been initialized
   unsigned int Checksum;

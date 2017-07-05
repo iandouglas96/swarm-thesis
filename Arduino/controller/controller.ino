@@ -37,8 +37,6 @@ void loop() {
     for (int i=0; i<radio.DATALEN; i++) {
       Serial.print((char)radio.DATA[i]);
     }
-
-    Serial.println();
   }
 
   //Do we have any commands sent from the computer?

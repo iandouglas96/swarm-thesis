@@ -3,7 +3,10 @@ import struct
 
 BROADCAST_ID = 255
 #This must be consistent with eeprom_structure.h in the swarm arduino project
-DUMP_STRUCT_FORMAT = "BBB"+"IIIIIB?I"
+HEADER_FORMAT = "BBB"
+
+DUMP_COMMMAND = 0x10
+FORMATS = {DUMP_COMMMAND:"IIIIIB?I"}
 
 #Helper class to manage wireless comms
 class SerialInterface:
@@ -19,28 +22,29 @@ class SerialInterface:
         #target id, followed by command and any arguments, then \n
         payload = chr(target_id)+chr(cmd)+args+chr(0x0A)
         self.ser.write(payload)
+        self.ser.flush() #make sure we push out the whole command
 
-        if (cmd == 0x10):
-            return self.handle_dump(target_id)
+        if (cmd == DUMP_COMMMAND):
+            print self.handle_response()
 
-    #Handle response from "dump" command
-    def handle_dump(self, target_id):
-        dump_data = []
-        #Loop to process
-        while (True):
-            line = self.ser.readline()
-            print "raw: "+line
-            try:
-                dump_struct = struct.unpack(DUMP_STRUCT_FORMAT, line)
-                dump_data.append(dump_struct)
-            except struct.error:
-                print "Dump data not of correct format.  Raw data: "+line
-                return 0
+    def handle_response(self):
+        #process header
+        try:
+            header = self.ser.read(struct.calcsize(HEADER_FORMAT))
+            header_struct = struct.unpack(HEADER_FORMAT, header)
+        except struct.error:
+            print "Bad header or No response"
+            return
 
-            if (target_id != BROADCAST_ID):
-                break
+        #send to appropriate handler depending on the command
+        data = self.ser.read(struct.calcsize(FORMATS[header_struct[2]]))
+        try:
+            data_struct = struct.unpack(FORMATS[header_struct[2]], data)
+        except struct.error:
+            print "Data not of correct format.  Raw data: " + str([hex(ord(c)) for c in data])
+            return
 
-        return dump_data
+        return {'sender_id':header_struct[0], 'cmd':header_struct[2], 'data':data_struct}
 
     #check for incoming data
     def receive_data(self):
