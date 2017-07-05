@@ -47,7 +47,7 @@ class NodeList(BoxLayout):
 
     def scan(self):
         #scan for robots
-        self.node_list = self.parent.comm.send_command(BROADCAST_ID, DUMP_COMMMAND)
+        self.node_list = self.parent.comm.send_command(BROADCAST_ID, DUMP_COMMAND)
         print self.node_list
         #populate list with list of detected nodes
         self.rv.data = []

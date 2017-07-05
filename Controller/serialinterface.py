@@ -17,13 +17,11 @@ class SerialInterface:
         #total message length, target id, followed by command and any arguments
         payload = chr(len(args)+3)+chr(target_id)+chr(cmd)+args
 
-        print str([hex(ord(c)) for c in payload])
-
         self.ser.write(payload)
         self.ser.flush() #make sure we push out the whole command
 
         #If we are broadcasting, we want to receive multiple response packets
-        if (target_id == BROADCAST_ID and (cmd == DUMP_COMMMAND)):
+        if (target_id == BROADCAST_ID and (cmd == DUMP_COMMAND)):
             response_list = []
             #Keep looking for responses until we timeout
             while True:
@@ -34,8 +32,10 @@ class SerialInterface:
             self.ser.reset_input_buffer();
             return response_list
         else:
-            #We only want one response
-            return self.handle_response()
+            #Was this a command expecting a reply?
+            if (cmd == DUMP_COMMAND):
+                #We only want one response
+                return self.handle_response()
 
     def handle_response(self):
         #process header
@@ -52,6 +52,7 @@ class SerialInterface:
         #send to appropriate handler depending on the command
         data = self.ser.read(struct.calcsize(FORMATS[header_struct[HEADER_COMMAND]]))
         try:
+            print header_struct[HEADER_COMMAND]
             data_struct = struct.unpack(FORMATS[header_struct[HEADER_COMMAND]], data)
         except struct.error:
             print "Data not of correct format.  Raw data: " + str([hex(ord(c)) for c in data])

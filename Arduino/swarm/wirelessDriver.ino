@@ -26,15 +26,16 @@ void checkForCommands() {
   if (radio.receiveDone()) {
     switch (radio.DATA[0]) {
       case DUMP:
+        //Send everything except the checksum
         sendResponse(radio.SENDERID, DUMP, (char*)&ConstData, sizeof(ConstData));
         break;
       case SET_CONSTS:
         //Ok, in that case the rest of the packet is the ConstData struct
         //Make sure it isn't corrupted or weird somehow
-        if (radio.DATALEN-1 == sizeof(ConstData)-sizeof(ConstData.Checksum)) {
+        if (radio.DATALEN-1 == sizeof(ConstData)) {
           //A bit sketchy, since radio.DATA is technically volatile.
           //Copy radio data into our struct
-          memcpy(&ConstData, (char *)&(radio.DATA[1]), sizeof(ConstData)-sizeof(ConstData.Checksum));
+          memcpy(&ConstData, (char *)&(radio.DATA[1]), sizeof(ConstData));
           //Save new values to EEPROM
           saveEepromData();
         } else {
