@@ -1,32 +1,27 @@
 from constants import *
 
-from random import sample
-from string import ascii_lowercase
-
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.properties import BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 
 from serialinterface import SerialInterface
 
-class NodeList(BoxLayout):
+from nodelist import *
+
+class Controller(BoxLayout):
     def __init__(self, comm):
-        super(BoxLayout, self).__init__()
+        super(Controller, self).__init__()
         self.comm = comm
 
-    def scan(self):
-        #scan for robots
-        self.node_list = self.comm.send_command(BROADCAST_ID, DUMP_COMMMAND)
-        print self.node_list
-        #populate list with list of detected nodes
-        self.rv.data = []
-        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID])}
-                        for node in self.node_list]
+    def new_selection(self, data):
+        print data
 
 class ControllerApp(App):
     def build(self):
         comm = SerialInterface('COM6')
-        return NodeList(comm)
+        return Controller(comm)
 
 if __name__ == '__main__':
     ControllerApp().run()
