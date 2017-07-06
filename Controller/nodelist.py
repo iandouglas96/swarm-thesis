@@ -11,6 +11,7 @@ from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 
 from serialinterface import SerialInterface
+from node import Node
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior, RecycleBoxLayout):
     pass
@@ -51,9 +52,7 @@ class NodeList(BoxLayout):
         print self.node_list
         #populate list with list of detected nodes
         self.rv.data = []
-        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID]), 'data':node['data']} for node in self.node_list]
-
-        self.rv.data.append({'value':"fake1", 'data':(1, 2, 3, 4, 5, 6, False, 1234)})
+        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID]), 'data':Node(node['data'], self.parent.comm)} for node in self.node_list]
 
     def new_selection(self, index):
         #Pass back to the highest level so it knows what to do

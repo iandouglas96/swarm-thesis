@@ -12,18 +12,17 @@ from nodelist import *
 from editdatapanel import *
 
 class Controller(BoxLayout):
-    def __init__(self, comm):
-        super(Controller, self).__init__()
-        self.comm = comm
+    def __init__(self, **kwargs):
+        super(Controller, self).__init__(**kwargs)
+        self.comm = SerialInterface('/dev/tty.usbmodem2654621')
 
-    #Pass data to panel to be populated
-    def new_selection(self, data):
-        self.ids.data_panel.test(data)
+    #Pass data to panel to be populatedd
+    def new_selection(self, node):
+        self.ids.data_panel.disp_node(node)
 
 class ControllerApp(App):
     def build(self):
-        comm = SerialInterface('COM6')
-        return Controller(comm)
+        return Controller()
 
 if __name__ == '__main__':
     ControllerApp().run()

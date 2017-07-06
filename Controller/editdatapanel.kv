@@ -51,5 +51,11 @@
     size_hint_y: None
     text: 'Apply'
     on_release: root.apply_changes()
+  ToggleButton:
+    height: '40dp'
+    size_hint_y: None
+    text: 'Manual Control'
+    #pass the new state to the controller when it changes
+    on_release: root.toggle_control_mode(self.state)
   #empty widget to take up space
   Widget:
