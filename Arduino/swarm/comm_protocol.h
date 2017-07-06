@@ -28,8 +28,8 @@ typedef enum COMMAND {
 
 //Structs for defining form of command arguments
 typedef struct DRIVE_ARGS {
-  unsigned char RSpeed;
-  unsigned char LSpeed;
+  int RSpeed;
+  int LSpeed;
 } DRIVE_ARGS;
 
 #endif //COMM_PROTOCOL_H

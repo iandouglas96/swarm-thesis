@@ -45,15 +45,18 @@ void checkForCommands() {
         }
         break;
       case DRIVE:
-        ManualMode = true;
-        //Cast arguments into struct for more easy access
-        DRIVE_ARGS * args; 
-        args = (DRIVE_ARGS*)&(radio.DATA[1]);
-
-        Serial.print("driving: ");
-        Serial.println(args->RSpeed);
-        
-        setSpeeds(args->RSpeed, args->LSpeed);
+        //Make sure our packet is max gucci
+        if (radio.DATALEN-1 == sizeof(DRIVE_ARGS)) {
+          ManualMode = true;
+          //Cast arguments into struct for more easy access
+          DRIVE_ARGS * args; 
+          args = (DRIVE_ARGS*)&(radio.DATA[1]);
+  
+          Serial.print("driving: ");
+          Serial.println(args->RSpeed);
+          
+          setSpeeds(args->RSpeed, args->LSpeed);
+        }
         break;
       case AUTO:
         ManualMode = false;
