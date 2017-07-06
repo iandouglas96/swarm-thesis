@@ -17,6 +17,8 @@ class SerialInterface:
         #total message length, target id, followed by command and any arguments
         payload = chr(len(args)+3)+chr(target_id)+chr(cmd)+args
 
+        print "Sending: "+str([hex(ord(c)) for c in payload])
+
         self.ser.write(payload)
         self.ser.flush() #make sure we push out the whole command
 

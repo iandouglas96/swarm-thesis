@@ -9,9 +9,11 @@ HEADER_COMMAND = 2
 #Command listing
 DUMP_COMMAND = 0x10
 SET_CONSTS_COMMAND = 0x13
+DRIVE_COMMAND = 0x16
+AUTO_COMMAND = 0x18
 
 #Format of returned data from commands
-FORMATS = {DUMP_COMMAND:"B?IIIII"}
+FORMATS = {DUMP_COMMAND:"B?IIIII", DRIVE_COMMAND:"ii"}
 
 #definitions for data structure
 DUMP_DATA_NODE_ID = 0

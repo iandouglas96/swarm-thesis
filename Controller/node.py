@@ -3,6 +3,11 @@ from constants import *
 from serialinterface import SerialInterface
 import struct
 
+UP = 0
+RIGHT = 1
+DOWN = 2
+LEFT = 3
+
 #A Class for keeping track of robot data
 class Node():
     def __init__(self, data, ser):
@@ -11,6 +16,9 @@ class Node():
         self.current_id = self.node_id
         self.comm = ser
         self.manual = False
+        #u, r, d, l
+        self.key_matrix = [False, False, False, False]
+        self.old_matrix = [False, False, False, False]
 
     #Parse data struct
     def set_data(self, data):
@@ -38,10 +46,65 @@ class Node():
     def set_manual(self, manual):
         if (manual):
             #take over the keyboard
-            Window.bind(on_key_down=self.key_action)
+            Window.bind(on_key_down=self.key_down)
+            Window.bind(on_key_up=self.key_up)
+
+            #enter manual control mode (and stop)
+            args = struct.pack(FORMATS[DRIVE_COMMAND], 0, 0)
+            self.comm.send_command(self.current_id, DRIVE_COMMAND, args)
         else:
             #relinquish the keyboard
-            Window.unbind(on_key_down=self.key_action)
+            Window.unbind(on_key_down=self.key_down)
+            Window.unbind(on_key_up=self.key_up)
+            self.key_matrix = [False, False, False, False]
 
-    def key_action(self, *args):
-        print "got a key event: %s" % list(args)
+            #return to auto control
+            self.comm.send_command(self.current_id, AUTO_COMMAND)
+
+    def key_down(self, window, key, *args):
+        if (key == 273):
+            #up
+            self.key_matrix[UP] = True
+        elif (key == 275):
+            #right
+            self.key_matrix[RIGHT] = True
+        elif (key == 274):
+            #down
+            self.key_matrix[DOWN] = True
+        elif (key == 276):
+            #left
+            self.key_matrix[LEFT] = True
+
+        self.command_motion()
+
+    def key_up(self, window, key, *args):
+        if (key == 273):
+            #up
+            self.key_matrix[UP] = False
+        elif (key == 275):
+            #right
+            self.key_matrix[RIGHT] = False
+        elif (key == 274):
+            #down
+            self.key_matrix[DOWN] = False
+        elif (key == 276):
+            #left
+            self.key_matrix[LEFT] = False
+
+        self.command_motion()
+
+    #If motion controls changed, send the appropriate command to the robot
+    def command_motion(self):
+        #only send command if something changed, so we don't spam the comm system
+        if (self.old_matrix != self.key_matrix):
+            r_speed = 200*(self.key_matrix[UP]-self.key_matrix[DOWN])+100*(self.key_matrix[LEFT]-self.key_matrix[RIGHT])
+            l_speed = 200*(self.key_matrix[UP]-self.key_matrix[DOWN])+100*(self.key_matrix[RIGHT]-self.key_matrix[LEFT])
+
+            #payload, assemble!
+            args = struct.pack(FORMATS[DRIVE_COMMAND], r_speed, l_speed)
+
+            #send the command
+            self.comm.send_command(self.current_id, DRIVE_COMMAND, args)
+
+            #slice so we copy values instead of ref
+            self.old_matrix = self.key_matrix[:]
