@@ -12,6 +12,8 @@
 
 //Send to this address to send to all robots
 #define BROADCAST_ID 255
+//ID number of control radio
+#define CONTROLLER_ID 1
 
 //Listing of all commands that can be sent to the robot
 typedef enum COMMAND {
@@ -25,6 +27,11 @@ typedef enum COMMAND {
   SET_CHANNEL,              //Set frequency beacon channel
   AUTO                      //Reset manual command overrides
 } COMMAND;
+
+//Listing of all update signals that the robot can send
+typedef enum UPDATE {
+  TARGET_LIST = COMMAND_BEGINNING //The list of all targets seen by the robot on a sweep
+} UPDATE;
 
 //Structs for defining form of command arguments
 typedef struct DRIVE_ARGS {

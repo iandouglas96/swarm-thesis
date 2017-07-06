@@ -1,4 +1,5 @@
 #include "eeprom_structure.h"
+#include "comm_protocol.h"
 
 //The maximum number of trackable targets each robot can see
 #define MAX_TARGETS 10
@@ -87,6 +88,11 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
 
 //for debugging purposes
 void printTargets(TARGET targets[MAX_TARGETS]) {
+  if (ConstData.Verbose) {
+    //Send the target list via comm link
+    //sendStatusUpdate(CONTROLLER_ID, TARGET_LIST, targets, sizeof(TARGET)*MAX_TARGETS);
+  }
+  
   for (int i=0; i<MAX_TARGETS; i++) {
     Serial.print(targets[i].magnitude);
     Serial.print(", ");

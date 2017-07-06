@@ -12,6 +12,9 @@
 //ID number of control radio
 #define CONTROLLER_ID 1
 
+//This is limited to 61 by the rfm61 library, choose lower value so we have space for headers and such
+#define MAX_PACKET_LENGTH 55
+
 //We'll use ATC to save some battery, adjust power output automatically
 RFM69_ATC radio(10, 0, false, 0);
 
@@ -70,20 +73,36 @@ void checkForCommands() {
 }
 
 //Used to respond to a command requesting a response
-void sendResponse(int targetId, char cmd, char * payload, int payloadLength) {
+void sendResponse(int targetId, char cmd, void * payload, int payloadLength) {
   //Prepend response header to payload
   char fullPayload[payloadLength+2];
   fullPayload[0] = REPLY_SIGNAL;
   fullPayload[1] = cmd;
   for (int i=0; i<payloadLength; i++) {
-    fullPayload[i+2] = payload[i];
+    fullPayload[i+2] = *((char*)payload+i);
   }
   //Send the assembled packet
   radio.send(targetId, fullPayload, payloadLength+2, false);
 }
 
 //Used to push updates to the controller
-void sendStatusUpdate(int targetId, char * payload, int payloadLength) {
-  
+void sendStatusUpdate(int targetId, char updateType, void * payload, int payloadLength) {
+  Serial.println(payloadLength);
+
+  char packetNumber = 0;
+  do {
+    //Prepend update header to payload
+    char fullPayload[payloadLength+2];
+    fullPayload[0] = STATUS_SIGNAL;
+    fullPayload[1] = updateType;
+    fullPayload[2] = packetNumber;
+    for (int i=0; i<payloadLength; i++) {
+      fullPayload[i+2] = *((char*)payload+i);
+    }
+    //Send the assembled packet
+    radio.send(targetId, fullPayload, payloadLength+2, false);
+
+    packetNumber++;
+  } while (payloadLength > 0); //Keep going while we have more to transmit
 }
 

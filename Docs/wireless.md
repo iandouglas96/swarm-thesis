@@ -11,9 +11,13 @@
 - Responses
   - Can only be sent by nodes
   - Responses encode the original command.
-  - 0x00 signals a response, followed by the original command and then the payload
+  - 0x00 signals a response, followed by the original command, and then the payload
   - Response to dump (0x10) would be `00 10 <data>`
-  - 0x01 signals a status update, followed by the update type
+
+- Updates
+  - 0x01 signals a status update, followed by the update type, then by the packet number, then the expected number of packets
+  - A target list update might then be `01 10 00 03 ...`
+    - This packet would be the 1st of 4 packets (indexing starts from 0)
 
 ## Command list
 | Command                  | Type | Mode            | Description                                 |
