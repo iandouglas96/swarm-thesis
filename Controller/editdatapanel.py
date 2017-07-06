@@ -26,8 +26,8 @@ class EditDataPanel(BoxLayout):
         verbose_flag = self.ids.verbose.active
 
         #pack all the data we want to send
-        args = struct.pack(FORMATS[DUMP_COMMAND], target_separation, attraction_const,
-                            repulsion_const, angular_v_const, linear_v_const, node_id, verbose_flag)
+        args = struct.pack(FORMATS[DUMP_COMMAND], node_id, verbose_flag, target_separation, attraction_const,
+                            repulsion_const, angular_v_const, linear_v_const)
 
         #send the command
         self.parent.comm.send_command(self.current_id, SET_CONSTS_COMMAND, args)

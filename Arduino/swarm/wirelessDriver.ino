@@ -38,6 +38,8 @@ void checkForCommands() {
           memcpy(&ConstData, (char *)&(radio.DATA[1]), sizeof(ConstData));
           //Save new values to EEPROM
           saveEepromData();
+          //Apply the new ID
+          radio.setAddress(ConstData.NodeID);
         } else {
           sendResponse(radio.SENDERID, SET_CONSTS, (char *)&radio.DATALEN, sizeof(radio.DATALEN));
         }

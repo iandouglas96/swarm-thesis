@@ -38,6 +38,7 @@ void loop() {
     resetScan();
   }
   checkForCommands();
+
   delay(1);
 }
 

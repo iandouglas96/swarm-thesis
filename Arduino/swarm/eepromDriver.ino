@@ -12,6 +12,7 @@ void setupEepromDriver() {
   if (Checksum != EEPROM_CHECKSUM_DEFAULT) {
     ConstData = EEPROM_DATA_DEFAULT;
     saveEepromData();
+    Checksum = EEPROM_CHECKSUM_DEFAULT;
     EEPROM.put(EEPROM_CHECKSUM_ADDRESS, Checksum);
   }
 }
