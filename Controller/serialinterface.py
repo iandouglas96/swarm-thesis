@@ -52,7 +52,8 @@ class SerialInterface:
             return
 
         #send to appropriate handler depending on the command
-        data = self.ser.read(struct.calcsize(FORMATS[header_struct[HEADER_COMMAND]]))
+        #Length is the overall packet length minus the length of the header
+        data = self.ser.read(header_struct[HEADER_LENGTH]-struct.calcsize(HEADER_FORMAT))
         try:
             print header_struct[HEADER_COMMAND]
             data_struct = struct.unpack(FORMATS[header_struct[HEADER_COMMAND]], data)

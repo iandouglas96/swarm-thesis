@@ -1,10 +1,11 @@
 #ID to send to to send to all nodes
 BROADCAST_ID = 255
 #This must be consistent with eeprom_structure.h in the swarm arduino project
-HEADER_FORMAT = "BBB"
-HEADER_SENDER = 0
-HEADER_TYPE = 1
-HEADER_COMMAND = 2
+HEADER_FORMAT = "BBBB"
+HEADER_LENGTH = 0
+HEADER_SENDER = 1
+HEADER_TYPE = 2
+HEADER_COMMAND = 3
 
 #Command listing
 DUMP_COMMAND = 0x10
