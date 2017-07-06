@@ -13,7 +13,7 @@
 #define MAX_CMD_LENGTH 50
 
 //We'll use ATC to save some battery, adjust power output automatically
-RFM69_ATC radio(10,0);
+RFM69_ATC radio(10,0,false,0);
 
 //Buffer to hold command to send
 char Command[MAX_CMD_LENGTH];

@@ -13,7 +13,7 @@
 #define CONTROLLER_ID 1
 
 //We'll use ATC to save some battery, adjust power output automatically
-RFM69_ATC radio(10,0);
+RFM69_ATC radio(10, 0, false, 0);
 
 void setupWireless() {
   radio.initialize(FREQUENCY, ConstData.NodeID, NETWORK_ID);
@@ -43,6 +43,21 @@ void checkForCommands() {
         } else {
           sendResponse(radio.SENDERID, SET_CONSTS, (char *)&radio.DATALEN, sizeof(radio.DATALEN));
         }
+        break;
+      case DRIVE:
+        ManualMode = true;
+        //Cast arguments into struct for more easy access
+        DRIVE_ARGS * args; 
+        args = (DRIVE_ARGS*)&(radio.DATA[1]);
+
+        Serial.print("driving: ");
+        Serial.println(args->RSpeed);
+        
+        setSpeeds(args->RSpeed, args->LSpeed);
+        break;
+      case AUTO:
+        ManualMode = false;
+        setSpeeds(0,0);
         break;
       default:
         //Unsupported command

@@ -12,15 +12,20 @@ typedef struct TARGET {
 //Config stored in EEPROM
 EEPROM_DATA ConstData;
 
+//true if we want to control robot directly from computer
+boolean ManualMode;
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting up...");
 
+  ManualMode = true;
+
   setupEepromDriver();
   setupDetector();
   setupLedDriver();
-  setupSteppers();
   setupWireless();
+  setupSteppers();
   
   //start up at 1kHz
   setBeacon(1000);
@@ -34,7 +39,10 @@ void loop() {
   if (newTargets != NULL) {
     //We have seen something, let's now act accordingly
     printTargets(newTargets);
-    processTargets(newTargets);
+    if (!ManualMode) {
+      //If we aren't being controlled externally, act according to sensory input
+      processTargets(newTargets);
+    }
     resetScan();
   }
   checkForCommands();
