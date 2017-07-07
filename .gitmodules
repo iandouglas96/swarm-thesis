@@ -1,3 +1,6 @@
 [submodule "Arduino/libraries/RFM69"]
 	path = Arduino/libraries/RFM69
 	url = https://github.com/iandouglas96/RFM69.git
+[submodule "Arduino/libraries/plainRFM69"]
+	path = Arduino/libraries/plainRFM69
+	url = https://github.com/iwanders/plainRFM69
