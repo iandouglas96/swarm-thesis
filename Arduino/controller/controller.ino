@@ -21,7 +21,7 @@ int CommandLength;
 
 void setup() {
   //Setup serial connection to computer
-  Serial.begin(9600);
+  Serial.begin(115200);
   CommandLength = 0;
   
   //Setup wireless
@@ -37,6 +37,13 @@ void loop() {
     Serial.print((char)radio.SENDERID);
     for (int i=0; i<radio.DATALEN; i++) {
       Serial.print((char)radio.DATA[i]);
+    }
+
+    //Send confirmation of reception if the sender asked
+    if (radio.ACKRequested())
+    {
+      byte theNodeID = radio.SENDERID;
+      radio.sendACK();
     }
   }
 

@@ -6,8 +6,8 @@
 //Struct defining information about a target (another robot)
 typedef struct TARGET {
   float magnitude;
-  int direction;
-  int bin;
+  short int direction;
+  char bin;
 };
 
 //Config stored in EEPROM
@@ -16,8 +16,10 @@ EEPROM_DATA ConstData;
 //true if we want to control robot directly from computer
 boolean ManualMode;
 
+TARGET targets[MAX_TARGETS];
+
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Starting up...");
 
   ManualMode = true;
@@ -47,8 +49,6 @@ void loop() {
     resetScan();
   }
   checkForCommands();
-
-  delay(1);
 }
 
 //Generate force vector based on target locations
@@ -90,7 +90,7 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
 void printTargets(TARGET targets[MAX_TARGETS]) {
   if (ConstData.Verbose) {
     //Send the target list via comm link
-    //sendStatusUpdate(CONTROLLER_ID, TARGET_LIST, targets, sizeof(TARGET)*MAX_TARGETS);
+    sendStatusUpdate(CONTROLLER_ID, TARGET_LIST, targets, sizeof(TARGET)*MAX_TARGETS);
   }
   
   for (int i=0; i<MAX_TARGETS; i++) {
@@ -98,7 +98,7 @@ void printTargets(TARGET targets[MAX_TARGETS]) {
     Serial.print(", ");
     Serial.print(targets[i].direction);
     Serial.print(", ");
-    Serial.print(targets[i].bin);
+    Serial.print((int)targets[i].bin);
     Serial.print(", ");
   }
   Serial.println();

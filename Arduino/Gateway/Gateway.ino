@@ -35,9 +35,9 @@
 #define NODEID        1    //unique for each node on same network
 #define NETWORKID     100  //the same on all nodes that talk to each other
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
-#define FREQUENCY     RF69_433MHZ
+//#define FREQUENCY     RF69_433MHZ
 //#define FREQUENCY     RF69_868MHZ
-//#define FREQUENCY     RF69_915MHZ
+#define FREQUENCY     RF69_915MHZ
 #define ENCRYPTKEY    "sampleEncryptKey" //exactly the same 16 characters/bytes on all nodes!
 #define IS_RFM69HW_HCW  //uncomment only for RFM69HW/HCW! Leave out if you have RFM69W/CW!
 //*********************************************************************************************
@@ -59,9 +59,9 @@
 #endif
 
 #ifdef ENABLE_ATC
-  RFM69_ATC radio(10,0);
+  RFM69_ATC radio(10,0,false,0);
 #else
-  RFM69 radio(10,0);
+  RFM69 radio(10,0,false,0);
 #endif
 
 SPIFlash flash(FLASH_SS, 0xEF30); //EF30 for 4mbit  Windbond chip (W25X40CL)

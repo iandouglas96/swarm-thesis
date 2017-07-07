@@ -74,6 +74,8 @@ void checkForCommands() {
 
 //Used to respond to a command requesting a response
 void sendResponse(int targetId, char cmd, void * payload, int payloadLength) {
+  Serial.print("sent dump: ");
+  Serial.println(payloadLength);
   //Prepend response header to payload
   char fullPayload[payloadLength+2];
   fullPayload[0] = REPLY_SIGNAL;
@@ -87,22 +89,27 @@ void sendResponse(int targetId, char cmd, void * payload, int payloadLength) {
 
 //Used to push updates to the controller
 void sendStatusUpdate(int targetId, char updateType, void * payload, int payloadLength) {
-  Serial.println(payloadLength);
-
   char packetNumber = 0;
+  char numPackets = payloadLength/MAX_PACKET_LENGTH;
+  int packetLength = 0;
+  char fullPayload[MAX_PACKET_LENGTH+4];
+
   do {
     //Prepend update header to payload
-    char fullPayload[payloadLength+2];
+    packetLength = min((payloadLength)-(packetNumber*MAX_PACKET_LENGTH), MAX_PACKET_LENGTH);
     fullPayload[0] = STATUS_SIGNAL;
     fullPayload[1] = updateType;
     fullPayload[2] = packetNumber;
-    for (int i=0; i<payloadLength; i++) {
-      fullPayload[i+2] = *((char*)payload+i);
+    fullPayload[3] = numPackets;
+    for (int i=0; i<packetLength; i++) {
+      fullPayload[i+4] = *((char*)payload+i+(packetNumber*MAX_PACKET_LENGTH));
     }
     //Send the assembled packet
-    radio.send(targetId, fullPayload, payloadLength+2, false);
-
-    packetNumber++;
-  } while (payloadLength > 0); //Keep going while we have more to transmit
+    if (radio.sendWithRetry(targetId, fullPayload, packetLength+4)) {
+      packetNumber++;
+    } else {
+      Serial.println("packet sending failed, retry");
+    }
+  } while (packetLength == MAX_PACKET_LENGTH); //Keep going while we have more to transmit
 }
 

@@ -36,9 +36,9 @@
 #define NETWORKID     100  //the same on all nodes that talk to each other (range up to 255)
 #define GATEWAYID     1
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
-#define FREQUENCY   RF69_433MHZ
+//#define FREQUENCY   RF69_433MHZ
 //#define FREQUENCY   RF69_868MHZ
-//#define FREQUENCY     RF69_915MHZ
+#define FREQUENCY     RF69_915MHZ
 #define ENCRYPTKEY    "sampleEncryptKey" //exactly the same 16 characters/bytes on all nodes!
 #define IS_RFM69HW_HCW  //uncomment only for RFM69HW/HCW! Leave out if you have RFM69W/CW!
 //*********************************************************************************************
@@ -61,17 +61,17 @@
 
 #define SERIAL_BAUD   115200
 
-int TRANSMITPERIOD = 200; //transmit a packet to gateway so often (in ms)
-char payload[] = "123 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+int TRANSMITPERIOD = 1; //transmit a packet to gateway so often (in ms)
+char payload[] = "123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
 char buff[20];
 byte sendSize=0;
 boolean requestACK = false;
 SPIFlash flash(FLASH_SS, 0xEF30); //EF30 for 4mbit  Windbond chip (W25X40CL)
 
 #ifdef ENABLE_ATC
-  RFM69_ATC radio(10,0);
+  RFM69_ATC radio(10,0,false,0);
 #else
-  RFM69 radio(10,0);
+  RFM69 radio(10,0,false,0);
 #endif
 
 void setup() {
@@ -190,7 +190,7 @@ void loop() {
   }
 
   int currPeriod = millis()/TRANSMITPERIOD;
-  if (currPeriod != lastPeriod)
+  if (true)
   {
     lastPeriod=currPeriod;
 
@@ -216,7 +216,7 @@ void loop() {
        Serial.print(" ok!");
       else Serial.print(" nothing...");
     }
-    sendSize = (sendSize + 1) % 31;
+    sendSize = 55;
     Serial.println();
     Blink(LED,3);
   }
