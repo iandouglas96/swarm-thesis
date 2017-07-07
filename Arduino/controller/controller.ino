@@ -96,7 +96,9 @@ void loop() {
     if (CommandLength==Command[0]) {
       //We have reached the end of the command
       //Second char is the address, rest is the payload
-      rfm.sendAddressedVariable(Command[1], &(Command[2]), CommandLength-2);
+      char targetAddress = Command[1];
+      Command[1] = CONTROLLER_ID;
+      rfm.sendAddressedVariable(targetAddress, &(Command[1]), CommandLength-1);
       
       CommandLength = 0;
     }

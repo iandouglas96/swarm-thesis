@@ -14,7 +14,7 @@ from editdatapanel import *
 class Controller(BoxLayout):
     def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
-        self.comm = SerialInterface('/dev/tty.usbmodem2654621')
+        self.comm = SerialInterface('/dev/tty.usbmodem2650881')
 
     #Pass data to panel to be populatedd
     def new_selection(self, node):

@@ -1,5 +1,5 @@
 #ID to send to to send to all nodes
-BROADCAST_ID = 255
+BROADCAST_ID = 0
 #This must be consistent with eeprom_structure.h in the swarm arduino project
 HEADER_FORMAT = "BBBB"
 HEADER_LENGTH = 0
