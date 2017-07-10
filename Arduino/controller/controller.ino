@@ -81,7 +81,7 @@ void loop() {
   if (rfm.available()) {
     char msgLength = rfm.read(&ReceiveBuffer);
     
-    Serial.print((char)(msgLength+1));
+    Serial.print((char)(msgLength));
     //First byte is the target address, which we don't need
     for (int i=1; i<msgLength; i++) {
       Serial.print(ReceiveBuffer[i]);

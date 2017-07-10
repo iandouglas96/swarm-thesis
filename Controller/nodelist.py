@@ -9,6 +9,7 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
+from kivy.clock import Clock
 
 from serialinterface import SerialInterface
 from node import Node
@@ -46,14 +47,25 @@ class NodeList(BoxLayout):
     selected = BooleanProperty(False)
     selectable = BooleanProperty(True)
 
+    def __init__(self, **kwargs):
+        super(NodeList, self).__init__(**kwargs)
+        #Set up regular check to see if anybody has pushed us new data
+        self.update_check = Clock.schedule_interval(self.check_for_updates, 1/10)
+
     def scan(self):
         #scan for robots
-        self.node_list = self.parent.comm.send_command(BROADCAST_ID, DUMP_COMMAND)
-        print self.node_list
+        node_list = self.parent.comm.send_command(BROADCAST_ID, DUMP_COMMAND)
+        print node_list
         #populate list with list of detected nodes
+        #create new Node objects to contain relevant information
         self.rv.data = []
-        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID]), 'data':Node(node['data'], self.parent.comm)} for node in self.node_list]
+        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID]), 'id_num':node['data'][DUMP_DATA_NODE_ID], 'data':Node(node['data'], self.parent.comm)} for node in node_list]
 
     def new_selection(self, index):
         #Pass back to the highest level so it knows what to do
         self.parent.new_selection(self.rv.data[index]['data'])
+
+    def check_for_updates(self, dt):
+        update_data = self.parent.comm.check_for_updates()
+        if (update_data != None):
+            print update_data

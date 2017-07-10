@@ -7,6 +7,8 @@ class SerialInterface:
     def __init__(self, port):
         #open serial port, set read timeout
         self.ser = Serial(port, timeout=0.5)
+        self.update_packet_on = 0
+        self.update_data = ''
 
     def __del__(self):
         print "closing serial port..."
@@ -39,9 +41,11 @@ class SerialInterface:
                 #We only want one response
                 return self.handle_response()
 
+    #Handle the response to the command we just sent
     def handle_response(self):
         #process header
         header = self.ser.read(struct.calcsize(HEADER_FORMAT))
+
         try:
             header_struct = struct.unpack(HEADER_FORMAT, header)
         except struct.error:
@@ -54,8 +58,8 @@ class SerialInterface:
         #send to appropriate handler depending on the command
         #Length is the overall packet length minus the length of the header
         data = self.ser.read(header_struct[HEADER_LENGTH]-struct.calcsize(HEADER_FORMAT))
+
         try:
-            print header_struct[HEADER_COMMAND]
             data_struct = struct.unpack(FORMATS[header_struct[HEADER_COMMAND]], data)
         except struct.error:
             print "Data not of correct format.  Raw data: " + str([hex(ord(c)) for c in data])
@@ -64,5 +68,43 @@ class SerialInterface:
         return {'sender_id':header_struct[HEADER_SENDER], 'cmd':header_struct[HEADER_COMMAND], 'data':data_struct}
 
     #check for incoming data
-    def receive_data(self):
-        pass
+    def check_for_updates(self):
+        #we have to have at least a header worth of data for this to be useful
+        if (self.ser.in_waiting > struct.calcsize(HEADER_FORMAT+LONG_HEADER_FORMAT)):
+            header = self.ser.read(struct.calcsize(HEADER_FORMAT+LONG_HEADER_FORMAT))
+            print "got update"
+            try:
+                header_struct = struct.unpack(HEADER_FORMAT+LONG_HEADER_FORMAT, header)
+            except struct.error:
+                print "Bad update header.  Raw data: " + str([hex(ord(c)) for c in header])
+                self.ser.reset_input_buffer()
+                return
+
+            #Verify that we are receiving packets in the correct order
+            if (self.update_packet_on != header_struct[LONG_HEADER_ID]):
+                print "Received packet out of order"
+                self.update_packet_on = 0
+                self.update_data = ''
+                self.ser.reset_input_buffer();
+                return
+
+            self.update_packet_on += 1
+
+            #Length is the overall packet length minus the length of the header
+            data = self.ser.read(header_struct[HEADER_LENGTH]-struct.calcsize(HEADER_FORMAT+LONG_HEADER_FORMAT))
+            #append data
+            self.update_data += data
+            print len(self.update_data)
+
+            #have we received the whole packet?
+            if (header_struct[LONG_HEADER_ID] == header_struct[LONG_HEADER_NUM_PACKETS]):
+                try:
+                    data_struct = struct.unpack(UPDATE_FORMATS[header_struct[HEADER_COMMAND]], self.update_data)
+                    #reset stuff
+                    self.update_packet_on = 0
+                    self.update_data = ''
+                    return {"id":header_struct[HEADER_SENDER], "cmd":header_struct[HEADER_COMMAND], "data":data_struct}
+                except struct.error:
+                    print "Data not of correct format.  Raw data: " + str([hex(ord(c)) for c in self.update_data])
+                    
+                    return
