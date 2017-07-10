@@ -145,20 +145,20 @@ void sendStatusUpdate(int targetId, char updateType, void * payload, int payload
   Serial.println("sending status update...");
   
   char packetNumber = 0;
-  char numPackets = payloadLength/MAX_PACKET_LENGTH;
+  char numPackets = payloadLength/(MAX_PACKET_LENGTH-5);
   int packetLength = 0;
-  char fullPayload[MAX_PACKET_LENGTH+5];
+  char fullPayload[MAX_PACKET_LENGTH];
 
   do {
     //Prepend update header to payload
-    packetLength = min((payloadLength)-(packetNumber*MAX_PACKET_LENGTH), MAX_PACKET_LENGTH)-5;
+    packetLength = min((payloadLength)-(packetNumber*(MAX_PACKET_LENGTH-5)), MAX_PACKET_LENGTH-5);
     fullPayload[0] = ConstData.NodeID;
     fullPayload[1] = STATUS_SIGNAL;
     fullPayload[2] = updateType;
     fullPayload[3] = packetNumber;
     fullPayload[4] = numPackets;
     for (int i=0; i<packetLength; i++) {
-      fullPayload[i+5] = *((char*)payload+i+(packetNumber*MAX_PACKET_LENGTH));
+      fullPayload[i+5] = *((char*)payload+i+(packetNumber*(MAX_PACKET_LENGTH-5)));
     }
 
     if (rfm.canSend()) {
