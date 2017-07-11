@@ -14,7 +14,12 @@
   - Can only be sent by nodes
   - Responses encode the original command.
   - 0x00 signals a response, , followed by the original command, and then the payload
+  - 0x02 is a response requesting an ACK
   - Response to dump (0x10) would be `FE 00 10 <data>` (FE is the sender)
+
+- ACK
+  - Acknowledgement packet
+  - sender, 0x03. `01 03` is a confirmation sent by 01
 
 - Updates
   - Prefaced by sender ID

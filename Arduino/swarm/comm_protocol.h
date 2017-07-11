@@ -5,6 +5,7 @@
 
 //Reserved to indicate the beginning of a reply payload
 #define REPLY_SIGNAL 0x00
+#define REPLY_SIGNAL_ACK 0x02
 //Reserved to indicate a status update
 #define STATUS_SIGNAL 0x01
 //The hex value commands begin at (reserve lower values)

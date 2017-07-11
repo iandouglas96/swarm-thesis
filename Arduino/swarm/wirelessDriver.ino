@@ -85,7 +85,7 @@ void checkForCommands() {
     switch (ReceiveBuffer[2]) {
       case DUMP:
         //Send everything except the checksum
-        sendResponse(sender, DUMP, (char*)&ConstData, sizeof(ConstData));
+        sendResponse(sender, DUMP, (char*)&ConstData, sizeof(ConstData), true);
         break;
       case SET_CONSTS:
         //Ok, in that case the rest of the packet is the ConstData struct
@@ -124,20 +124,42 @@ void checkForCommands() {
   }
 }
 
+bool checkForAck(int target) {
+  //Do we have any new packets to process?
+  if (rfm.available()) {
+    char msgLength = rfm.read(&ReceiveBuffer);
+    char sender = ReceiveBuffer[1];
+    if (msgLength == 3 && target == sender) {
+      return true;
+    }
+  }
+  return false;
+}
+
 //Used to respond to a command requesting a response
-void sendResponse(int targetId, char cmd, void * payload, int payloadLength) {
-  Serial.print("sent dump: ");
+void sendResponse(int targetId, char cmd, void * payload, int payloadLength, bool ack) {
+  Serial.print("sent response: ");
   Serial.println(payloadLength);
   //Prepend response header to payload
   char fullPayload[payloadLength+2];
   fullPayload[0] = ConstData.NodeID;
-  fullPayload[1] = REPLY_SIGNAL;
+  fullPayload[1] = ack ? REPLY_SIGNAL_ACK : REPLY_SIGNAL;
   fullPayload[2] = cmd;
   for (int i=0; i<payloadLength; i++) {
     fullPayload[i+3] = *((char*)payload+i);
   }
-  //Send the assembled packet
-  rfm.sendAddressedVariable(targetId, fullPayload, payloadLength+3);
+  if (ack) {
+    do {
+      Serial.println("sending...");
+      //send the packet
+      rfm.sendAddressedVariable(targetId, fullPayload, payloadLength+3);
+      //give some time for a response
+      delay(300);
+    } while (!checkForAck(targetId));
+  } else {
+    //Nothing fancy, just send and then chillax
+    rfm.sendAddressedVariable(targetId, fullPayload, payloadLength+3);
+  }
 }
 
 //Used to push updates to the controller
