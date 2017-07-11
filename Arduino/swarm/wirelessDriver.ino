@@ -81,6 +81,12 @@ void checkForCommands() {
   if (rfm.available()) {
     char msgLength = rfm.read(&ReceiveBuffer);
     char sender = ReceiveBuffer[1];
+    Serial.print("cmd received: ");
+    for (int i=0; i<msgLength; i++) {
+      Serial.print((int)ReceiveBuffer[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
     //First byte is the target address, which we don't need
     switch (ReceiveBuffer[2]) {
       case DUMP:

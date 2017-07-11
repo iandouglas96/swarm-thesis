@@ -61,20 +61,23 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
       //Nonzero magnitude means this is a real thing
       //Convert magnitude to cm
       float dist = magToCm(targets[i].magnitude);
-      //Note: repulsion is considered negative
-      float force_mag = 0;
 
-      if (dist > ConstData.TargetSeparation) {
-        //attraction
-        force_mag = (dist-ConstData.TargetSeparation)*ConstData.AttractionConst;
-      } else if (dist < ConstData.TargetSeparation) {
-        //repulsion
-        force_mag = (dist-ConstData.TargetSeparation)*ConstData.RepulsionConst;
+      if (dist < ConstData.TargetSeparation*1.5) {
+        //Note: repulsion is considered negative
+        float force_mag = 0;
+  
+        if (dist > ConstData.TargetSeparation) {
+          //attraction
+          force_mag = (dist-ConstData.TargetSeparation)*ConstData.AttractionConst;
+        } else if (dist < ConstData.TargetSeparation) {
+          //repulsion
+          force_mag = (dist-ConstData.TargetSeparation)*ConstData.RepulsionConst;
+        }
+  
+        //Get x and y force components so they can be added.  Convert angle to radians first
+        forcefwd += force_mag*cos(targets[i].direction*0.01745);
+        forceside += force_mag*sin(targets[i].direction*0.01745);
       }
-
-      //Get x and y force components so they can be added.  Convert angle to radians first
-      forcefwd += force_mag*cos(targets[i].direction*0.01745);
-      forceside += force_mag*sin(targets[i].direction*0.01745);
     }
   }
 
@@ -141,5 +144,5 @@ void calcMovement(float forcefwd, float forceside) {
 //Convert FFT magnitude values to distances.
 double magToCm(float magnitude) {
   //empirically determined calibration curve
-  return -log(magnitude*0.9022)*20;
+  return pow(magnitude/532.03, -0.539);
 }
