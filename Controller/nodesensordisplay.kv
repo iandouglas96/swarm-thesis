@@ -1,7 +1,14 @@
-<NodeSensorDisplay@Widget>:
+<NodeSensorDisplay>:
   canvas.before:
+    #draw background
     Color:
       rgba: (0.2, 0.2, 0.2, 1)
     Rectangle:
       size: self.size
       pos: self.pos
+    #draw origin
+    Color:
+      rgba: (0.8, 0.8, 0.8, 1)
+    Ellipse:
+      size: 50,50
+      pos: self.pos[0]+self.size[0]/2-25,self.pos[1]+self.size[1]/2-25

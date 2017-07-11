@@ -21,6 +21,8 @@ char Command[MAX_PACKET_LENGTH];
 char ReceiveBuffer[MAX_PACKET_LENGTH];
 int CommandLength;
 
+char AckPacket[2] = {CONTROLLER_ID, 0x03};
+
 //Radio object
 plainRFM69 rfm = plainRFM69(SLAVE_SELECT_PIN);
 
@@ -72,8 +74,12 @@ void setup() {
 }
 
 //Interrupt handler for the radio
-void interrupt_RFM(){
+void interrupt_RFM() {
     rfm.poll(); // in the interrupt, call the poll function.
+}
+
+void sendAck(char targetAddress) {
+  rfm.sendAddressedVariable(targetAddress, &AckPacket, 2);
 }
 
 void loop() {
@@ -85,6 +91,11 @@ void loop() {
     //First byte is the target address, which we don't need
     for (int i=1; i<msgLength; i++) {
       Serial.print(ReceiveBuffer[i]);
+    }
+
+    //Check if ACK was requested
+    if (ReceiveBuffer[2] == 0x02) {
+      sendAck(ReceiveBuffer[1]);
     }
   }
 

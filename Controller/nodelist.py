@@ -72,5 +72,6 @@ class NodeList(BoxLayout):
             relevant_node = filter(lambda node: node['id_num'] == update_data['id_num'], self.rv.data)
             if (len(relevant_node) > 0):
                 relevant_node[0]['data'].update(update_data['cmd'], update_data['data'])
+                self.parent.update_callback()
             else:
                 print "Got update from nonexistent node.  Probably should scan"
