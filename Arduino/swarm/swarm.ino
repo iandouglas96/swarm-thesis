@@ -7,7 +7,7 @@
 typedef struct TARGET {
   float magnitude;
   short int direction;
-  char bin;
+  short int bin;
 };
 
 //Config stored in EEPROM
