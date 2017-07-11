@@ -108,3 +108,16 @@ class Node():
 
             #slice so we copy values instead of ref
             self.old_matrix = self.key_matrix[:]
+
+    def update(self, update_type, data):
+        if (update_type == TARGET_LIST_UPDATE):
+            #clear out list before we load in new values
+            self.target_list = []
+            for bin in range(0, TARGET_LIST_NUM_TARGETS):
+                #verify that the magnitude is nonzero to see if it is a target
+                if (data[bin*3] != 0):
+                    target = {'magnitude':data[bin*3+TARGET_LIST_UPDATE_MAGNITUDE],
+                              'direction':data[bin*3+TARGET_LIST_UPDATE_DIRECTION],
+                              'bin':data[bin*3+TARGET_LIST_UPDATE_BIN]}
+                    self.target_list.append(target)
+            print self.target_list

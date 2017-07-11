@@ -72,7 +72,7 @@ class SerialInterface:
         #we have to have at least a header worth of data for this to be useful
         if (self.ser.in_waiting > struct.calcsize(HEADER_FORMAT+LONG_HEADER_FORMAT)):
             header = self.ser.read(struct.calcsize(HEADER_FORMAT+LONG_HEADER_FORMAT))
-            print "got update"
+            print "update packet received"
             try:
                 header_struct = struct.unpack(HEADER_FORMAT+LONG_HEADER_FORMAT, header)
             except struct.error:
@@ -94,7 +94,6 @@ class SerialInterface:
             data = self.ser.read(header_struct[HEADER_LENGTH]-struct.calcsize(HEADER_FORMAT+LONG_HEADER_FORMAT))
             #append data
             self.update_data += data
-            print len(self.update_data)
 
             #have we received the whole packet?
             if (header_struct[LONG_HEADER_ID] == header_struct[LONG_HEADER_NUM_PACKETS]):
@@ -103,8 +102,9 @@ class SerialInterface:
                     #reset stuff
                     self.update_packet_on = 0
                     self.update_data = ''
-                    return {"id":header_struct[HEADER_SENDER], "cmd":header_struct[HEADER_COMMAND], "data":data_struct}
+                    print "complete packet parsed"
+                    return {"id_num":header_struct[HEADER_SENDER], "cmd":header_struct[HEADER_COMMAND], "data":data_struct}
                 except struct.error:
                     print "Data not of correct format.  Raw data: " + str([hex(ord(c)) for c in self.update_data])
-                    
+
                     return

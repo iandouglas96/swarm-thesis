@@ -53,7 +53,7 @@ class NodeList(BoxLayout):
         self.update_check = Clock.schedule_interval(self.check_for_updates, 1/10)
 
     def scan(self):
-        #scan for robots
+        #scan for robotsjj
         node_list = self.parent.comm.send_command(BROADCAST_ID, DUMP_COMMAND)
         print node_list
         #populate list with list of detected nodes
@@ -68,4 +68,9 @@ class NodeList(BoxLayout):
     def check_for_updates(self, dt):
         update_data = self.parent.comm.check_for_updates()
         if (update_data != None):
-            print update_data
+            #Find the node which the update data came from
+            relevant_node = filter(lambda node: node['id_num'] == update_data['id_num'], self.rv.data)
+            if (len(relevant_node) > 0):
+                relevant_node[0]['data'].update(update_data['cmd'], update_data['data'])
+            else:
+                print "Got update from nonexistent node.  Probably should scan"
