@@ -6,6 +6,27 @@
     Rectangle:
       size: self.size
       pos: self.pos
+    #draw distance markers
+    Color:
+      rgba: (0.25, 0.25, 0.25, 1)
+    Ellipse:
+      size: 8*80, 8*80
+      pos: self.pos[0]+self.size[0]/2-4*80,self.pos[1]+self.size[1]/2-4*80
+    Color:
+      rgba: (0.3, 0.3, 0.3, 1)
+    Ellipse:
+      size: 8*60, 8*60
+      pos: self.pos[0]+self.size[0]/2-4*60,self.pos[1]+self.size[1]/2-4*60
+    Color:
+      rgba: (0.25, 0.25, 0.25, 1)
+    Ellipse:
+      size: 8*40, 8*40
+      pos: self.pos[0]+self.size[0]/2-4*40,self.pos[1]+self.size[1]/2-4*40
+    Color:
+      rgba: (0.3, 0.3, 0.3, 1)
+    Ellipse:
+      size:8*20, 8*20
+      pos: self.pos[0]+self.size[0]/2-4*20,self.pos[1]+self.size[1]/2-4*20
     #draw origin
     Color:
       rgba: (0.8, 0.8, 0.8, 1)
