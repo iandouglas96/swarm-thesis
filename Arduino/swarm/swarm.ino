@@ -62,6 +62,7 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
       //Convert magnitude to cm
       float dist = magToCm(targets[i].magnitude);
 
+
       if (dist < ConstData.TargetSeparation*1.5) {
         //Note: repulsion is considered negative
         float force_mag = 0;
@@ -144,5 +145,5 @@ void calcMovement(float forcefwd, float forceside) {
 //Convert FFT magnitude values to distances.
 double magToCm(float magnitude) {
   //empirically determined calibration curve
-  return pow(magnitude/532.03, -0.539);
+  return pow(magnitude/1933.1, -0.54);
 }

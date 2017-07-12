@@ -9,13 +9,14 @@ AudioConnection          patchCord1(adcs1, 0, fft[0], 0);
 AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 
 //Top of noise floor
-#define DETECTOR_FLOOR 0.02
-//Minimum height of peak
-#define MIN_PEAK_HEIGHT 0.07
+#define DETECTOR_FLOOR 0.05
+//Minimum height of peak (must be odd)
+#define MIN_PEAK_WIDTH 9
 
 //Number of degrees servo lags behind stated value (experimentally determined)
 #define SERVO_LAG_COMP 8
 #define SERVO_SPEED 2
+#define SERVO_SCALE_FACTOR 0.95
 
 //Define the location of bins on the FFT
 #define NUM_FREQ_BINS 2
@@ -25,7 +26,7 @@ float LastMagnitude[NUM_FREQ_BINS];
 //Starting magnitude of a peak
 float PeakDetected[NUM_FREQ_BINS];
 
-float RawData[360/SERVO_SPEED][NUM_FREQ_BINS];
+float RawData[(360/SERVO_SPEED)+1][NUM_FREQ_BINS];
 
 //Current position of servo (degrees)
 int pos;
@@ -74,13 +75,13 @@ TARGET * targetScan() {
 
     //Store data
     for (int i=0; i<NUM_FREQ_BINS; i++) {
-      RawData[pos/SERVO_SPEED][i] = fft[0].read(FREQ_BINS[i]-1,FREQ_BINS[i]+1);
-      RawData[(pos+180)/SERVO_SPEED][i] = fft[1].read(FREQ_BINS[i]-1,FREQ_BINS[i]+1);
+      RawData[pos/SERVO_SPEED][i] = fft[0].read(FREQ_BINS[i]);
+      RawData[(pos+180)/SERVO_SPEED][i] = fft[1].read(FREQ_BINS[i]);
     }
     
     pos += SERVO_SPEED*dir;
     //Move servo to next location (compensate for servo lag)
-    servo.write(180-(pos+(SERVO_LAG_COMP*dir)));
+    servo.write((180-(pos+(SERVO_LAG_COMP*dir)))*SERVO_SCALE_FACTOR);
 
     if (pos > (180-SERVO_SPEED) || pos < SERVO_SPEED) {
       //Get ready for next scan
@@ -94,24 +95,44 @@ TARGET * targetScan() {
 
 void parseScan() {
   //Scan through each bin
-  for (int angle=0; angle<260; angle += SERVO_SPEED) {
-    for (int i=0; i<NUM_FREQ_BINS; i++) {
-      float binMag = RawData[angle/SERVO_SPEED][i];
-      //Do we have a peak?
-      if (binMag > DETECTOR_FLOOR && binMag >= LastMagnitude[i] && PeakDetected[i]==0) {
-        //We are going up a peak
-        PeakDetected[i] = binMag;
-      } else if (binMag < LastMagnitude[i] && PeakDetected[i]!=0 && LastMagnitude[i]-PeakDetected[i] > MIN_PEAK_HEIGHT) {
-        TargetsInProgress[NumTargets].magnitude = LastMagnitude[i]-PeakDetected[i];
-        TargetsInProgress[NumTargets].direction = angle;
-        TargetsInProgress[NumTargets].bin = i;
-        //We just started going down the peak
-        PeakDetected[i] = 0;
-        if (NumTargets < MAX_TARGETS-1) {
+  for (int freq=0; freq<NUM_FREQ_BINS; freq++) {
+    for (int angle=0; angle<360; angle += SERVO_SPEED) {
+      int binNum = angle/SERVO_SPEED;
+      float bin = RawData[binNum][freq];
+      //Are we above the noise floor?
+
+      if (freq==0) {
+        Serial.println(bin);
+      }
+      
+      if (bin > DETECTOR_FLOOR) {
+        bool isPeak = true;
+        float sum = 0;
+        float lastVal = 0;
+        for (int i=-(MIN_PEAK_WIDTH-1)/2; i<=(MIN_PEAK_WIDTH-1)/2; i++) {
+          int nearBinNum = binNum+i;
+          //Handle wrapping
+          if (nearBinNum > 360/SERVO_SPEED) nearBinNum -= 360/SERVO_SPEED;
+          else if (nearBinNum < 0) nearBinNum += 360/SERVO_SPEED;
+          if (RawData[nearBinNum][freq] > bin || 
+             (RawData[nearBinNum][freq]+DETECTOR_FLOOR < lastVal && i < 0) ||
+             (RawData[nearBinNum][freq]-DETECTOR_FLOOR > lastVal && i > 0)) {
+            isPeak = false;
+          } else {
+            sum += RawData[nearBinNum][freq];
+          }
+
+          lastVal = RawData[nearBinNum][freq];
+        }
+
+        if (isPeak) {
+          //We have a peak!
+          TargetsInProgress[NumTargets].magnitude = sum;
+          TargetsInProgress[NumTargets].direction = angle;
+          TargetsInProgress[NumTargets].bin = freq; 
           NumTargets++;
         }
       }
-      LastMagnitude[i] = binMag;
     }
   }
 }
