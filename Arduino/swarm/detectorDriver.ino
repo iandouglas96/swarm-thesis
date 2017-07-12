@@ -10,7 +10,7 @@ AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 
 //Top of noise floor
 #define DETECTOR_FLOOR 0.05
-//Minimum height of peak (must be odd)
+//Width of peak (must be odd)
 #define MIN_PEAK_WIDTH 9
 
 //Number of degrees servo lags behind stated value (experimentally determined)
@@ -21,10 +21,6 @@ AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 //Define the location of bins on the FFT
 #define NUM_FREQ_BINS 2
 const int FREQ_BINS[NUM_FREQ_BINS] = {23, 28};
-//Array to keep track of the last values in each bin (for peak detection).  2d array for each fft
-float LastMagnitude[NUM_FREQ_BINS];
-//Starting magnitude of a peak
-float PeakDetected[NUM_FREQ_BINS];
 
 float RawData[(360/SERVO_SPEED)+1][NUM_FREQ_BINS];
 
@@ -44,10 +40,6 @@ void resetScan() {
   //Clear magnitudes to 0
   for (int i=0; i<MAX_TARGETS; i++) {
     TargetsInProgress[i].magnitude = 0;
-  }
-  for (int i=0; i<NUM_FREQ_BINS; i++) {
-    PeakDetected[i] = 0;
-    LastMagnitude[i] = 0;
   }
 
   NumTargets = 0;
