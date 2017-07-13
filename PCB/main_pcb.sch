@@ -325,7 +325,7 @@ F 1 "PWR" V 6700 2200 50  0000 C CNN
 F 2 "Terminal_Blocks:TerminalBlock_Pheonix_MPT-2.54mm_2pol" H 6600 2200 50  0001 C CNN
 F 3 "" H 6600 2200 50  0000 C CNN
 	1    6600 2200
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L GND #PWR015
@@ -357,7 +357,7 @@ Text Label 5700 5050 2    60   ~ 0
 SCK
 Text Label 5700 5150 2    60   ~ 0
 RadCS
-Text Label 5700 5350 2    60   ~ 0
+Text Label 7550 4750 2    60   ~ 0
 RadInt
 Text Label 1850 5100 2    60   ~ 0
 MISO
@@ -402,7 +402,7 @@ F 1 "LED" V 7800 2150 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_2x01_Pitch2.54mm" H 7700 2150 50  0001 C CNN
 F 3 "" H 7700 2150 50  0000 C CNN
 	1    7700 2150
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L +3V3 #PWR017
@@ -823,4 +823,31 @@ F 3 "" H 7550 5350 50  0000 C CNN
 $EndComp
 Wire Wire Line
 	7400 5350 7550 5350
+Wire Wire Line
+	7550 4750 7550 4950
+Wire Wire Line
+	7550 4950 7400 4950
+Text Label 1850 3450 2    60   ~ 0
+Reset
+Wire Wire Line
+	1850 3450 1950 3450
+Text Label 5700 5250 2    60   ~ 0
+Reset
+$Comp
+L CONN_01X02 P9
+U 1 1 5966E4C1
+P 4600 4250
+F 0 "P9" H 4600 4400 50  0000 C CNN
+F 1 "Range" V 4700 4250 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_2x01_Pitch2.54mm" H 4600 4250 50  0001 C CNN
+F 3 "" H 4600 4250 50  0000 C CNN
+	1    4600 4250
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	4400 4200 3950 4200
+Wire Wire Line
+	3950 4350 4400 4350
+Wire Wire Line
+	4400 4350 4400 4300
 $EndSCHEMATC
