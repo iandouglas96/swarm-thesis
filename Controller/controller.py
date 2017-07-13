@@ -14,7 +14,7 @@ from editdatapanel import *
 from nodesensordisplay import *
 
 class Controller(BoxLayout):
-    def __init__(self, **kwargs): 
+    def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
         self.comm = SerialInterface('/dev/tty.usbmodem2654621')
 
