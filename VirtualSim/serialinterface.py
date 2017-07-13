@@ -19,7 +19,7 @@ class SerialInterface:
 
     def has_packets(self):
         #return True if there is something in the queue
-        return !self.rx.empty()
+        return not self.rx.empty()
 
 class TxManager(threading.Thread):
     def __init__(self, port, tx_queue, args=(), kwargs=None):

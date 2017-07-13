@@ -1,3 +1,9 @@
+#set our main window size
+#have to do this first
+from kivy.config import Config
+Config.set('graphics', 'width', '900')
+Config.set('graphics', 'height', '500')
+
 from constants import *
 
 from kivy.app import App
@@ -5,7 +11,6 @@ from kivy.lang import Builder
 from kivy.properties import BooleanProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.config import Config
 
 from serialinterface import SerialInterface
 
@@ -16,7 +21,7 @@ from nodesensordisplay import *
 class Controller(BoxLayout):
     def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
-        self.comm = SerialInterface('/dev/tty.usbmodem2654621')
+        self.comm = SerialInterface('/dev/ttys004')
 
     #Pass data to panel to be populatedd
     def new_selection(self, node):
@@ -31,9 +36,5 @@ class ControllerApp(App):
         return Controller()
 
 if __name__ == '__main__':
-    #set our main window size
-    Config.set('graphics', 'width', '900')
-    Config.set('graphics', 'height', '500')
-    Config.write()
     #off to the races!
     ControllerApp().run()
