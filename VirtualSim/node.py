@@ -1,10 +1,13 @@
 from kivy.uix.widget import Widget
-from kivy.properties import BoundedNumericProperty
+from kivy.properties import NumericProperty
 from kivy.clock import Clock
 import math
 import random
 
 class Node(Widget):
+    #link node_id to the .kv file by making it a kivy property
+    node_id = NumericProperty(0)
+
     def __init__(self, **kwargs):
         super(Node, self).__init__(**kwargs)
         #configuration numbers
@@ -21,6 +24,8 @@ class Node(Widget):
         self.angular_v = 0
         #reference back to the node field
         self.field = kwargs['field']
+        self.pos = [300+random.random()*200, 300+random.random()*200]
+        self.angle = random.random()*360
         Clock.schedule_once(self.setup_scan, random.random()*1)
 
     #callback function to create random offset for update scans
@@ -34,16 +39,43 @@ class Node(Widget):
         #figure out force vector
         force_fwd = 0
         force_side = 0
-        
-        for (n in neighbors):
-            if (n['dist'] < self.target_separation*1.5):
+
+        for n in self.targets:
+            if (n['distance'] < self.target_separation*1.5):
                 force_mag = 0
-                if (n['dist'] > self.target_separation):
-                    force_mag = (n['dist']-self.target_separation)*self.attraction_const
-                else if (n['dist'] > self.target_separation):
-                    force_mag = (n['dist']-self.target_separation)*self.repulsion_const
+                if (n['distance'] > self.target_separation):
+                    force_mag = (n['distance']-self.target_separation)*self.attraction_const
+                elif (n['distance'] < self.target_separation):
+                    force_mag = (n['distance']-self.target_separation)*self.repulsion_const
+
+                force_fwd += force_mag*math.cos(n['direction'])
+                force_side += force_mag*math.sin(n['direction'])
+
+        self.calc_movement(force_fwd, force_side)
+
+    def calc_movement(self, force_fwd, force_side):
+        #convert force vector to motion settings
+        if (force_fwd != 0 or force_side != 0):
+            #Go back to circular coordinates
+            force_angle = math.pi/2-math.atan2(force_fwd, force_side);
+            force_mag = math.sqrt(force_fwd*force_fwd + force_side*force_side);
+
+            #put angle in the +-90 degree range
+            while (force_angle > math.pi/2):
+              force_angle -= math.pi;
+              force_mag *= -1;
+            while (force_angle < -math.pi/2):
+              force_angle += math.pi;
+              force_mag *= -1;
+
+            self.angular_v = (self.angular_v_const * force_angle);
+            self.linear_v = (self.linear_v_const * force_mag * math.cos(force_angle));
+        else:
+            #stop
+            self.angular_v = 0
+            self.linear_v = 0
 
     def update(self):
-        self.pos[0] += 5 * self.linear_v * math.cos(math.radians(self.angle))
-        self.pos[1] += 5 * self.linear_v * math.sin(math.radians(self.angle))
-        self.angle += self.angular_v
+        self.pos[0] += 5 * self.linear_v/500 * math.cos(math.radians(self.angle))
+        self.pos[1] += 5 * self.linear_v/500 * math.sin(math.radians(self.angle))
+        self.angle += self.angular_v/100

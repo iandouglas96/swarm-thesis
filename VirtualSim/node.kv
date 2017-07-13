@@ -3,7 +3,7 @@
   angle: 0
   pos: (200,200)
   canvas.before:
-    PushMatrix:
+    PushMatrix
     Rotate:
       axis: 0,0,1
       angle: self.angle
@@ -18,4 +18,7 @@
     Rectangle:
       size: (self.n_width/2,self.n_width)
       pos: self.pos
-    PopMatrix:
+    PopMatrix
+  Label:
+    text: str(root.node_id)
+    pos: (root.pos[0]-root.n_width/2, root.pos[1]-root.n_width/2)
