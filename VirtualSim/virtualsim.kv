@@ -1,4 +1,5 @@
 #:kivy 1.10.0
+#:include node.kv
 
 <VirtualSim>:
   NodeField:
@@ -10,20 +11,10 @@
       Rectangle:
         size: self.size
         pos: self.pos
-
-<Node>:
-  n_width:50
-  angle: 0
-  pos: (200,200)
-  canvas.before:
-    PushMatrix:
-    Rotate:
-      axis: 0,0,1
-      angle: self.angle
-      origin: (self.pos[0]+self.n_width/2, self.pos[1]+self.n_width/2)
-    Color:
-      rgba: (1, 0, 0, 1)
-    Rectangle:
-      size: (self.n_width,self.n_width)
-      pos: self.pos
-    PopMatrix:
+  Label:
+    id: serial_label
+    text: "no port open"
+    width: 300
+    size_hint_y: None
+    size_hint_x: None
+    pos_hint: {'x':0, 'y':0}

@@ -15,11 +15,14 @@ class SerialInterface:
         RxManager(master, self.rx).start()
 
         #print out the port we should connect to
-        print os.ttyname(slave)
+        self.port_name = os.ttyname(slave)
 
     def has_packets(self):
         #return True if there is something in the queue
         return not self.rx.empty()
+
+    def get_port_name(self):
+        return self.port_name
 
 class TxManager(threading.Thread):
     def __init__(self, port, tx_queue, args=(), kwargs=None):
