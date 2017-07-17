@@ -9,9 +9,9 @@ AudioConnection          patchCord1(adcs1, 0, fft[0], 0);
 AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 
 //Top of noise floor
-#define DETECTOR_FLOOR 0.05
+#define DETECTOR_FLOOR 0.03
 //Width of peak (must be odd)
-#define MIN_PEAK_WIDTH 9
+#define MIN_PEAK_WIDTH 5
 
 //Number of degrees servo lags behind stated value (experimentally determined)
 #define SERVO_LAG_COMP 8
