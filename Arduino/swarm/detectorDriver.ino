@@ -122,7 +122,9 @@ void parseScan() {
           TargetsInProgress[NumTargets].magnitude = sum;
           TargetsInProgress[NumTargets].direction = angle;
           TargetsInProgress[NumTargets].bin = freq; 
-          NumTargets++;
+          if (NumTargets < MAX_TARGETS - 1) {
+            NumTargets++;
+          }
         }
       }
     }

@@ -94,7 +94,7 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
 void printTargets(TARGET targets[MAX_TARGETS]) {
   if (ConstData.Verbose) {
     //Send the target list via comm link
-    sendStatusUpdate(CONTROLLER_ID, TARGET_LIST, targets, sizeof(TARGET)*MAX_TARGETS);
+    //sendStatusUpdate(CONTROLLER_ID, TARGET_LIST, targets, sizeof(TARGET)*MAX_TARGETS);
   }
   
   for (int i=0; i<MAX_TARGETS; i++) {

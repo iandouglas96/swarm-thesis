@@ -13,12 +13,13 @@
 12;"R1,R5,R6,R7,R11,R12";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";6;"20k";;;
 13;"R4,R10";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"1M";;;
 14;"R13";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"10R";;;
-15;"Rc1,Rc2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"240k";;;
+15;"Rc1,Rc2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"36k";;;
 16;"Rd1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"6.2k";;;
 17;"Rd2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"1.5k";;;
-18;"Rf1,Rf2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"750k";;;
+18;"Rf1,Rf2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";2;"68k";;;
 19;"U1";"Teensy-3.1";1;"Teensy_3.1";;;
 20;"U3,U4";"DIP-14_W7.62mm";2;"MCP6004";;;
 21;"P7,P8";"Pin_Header_Straight_2x03_Pitch2.54mm";2;"CONN_02X03";;;
 22;"U6,U5";"DRV8834Breakout";2;"DRV8834_Breakout";;;
 23;"U2";"RFM69Breakout";1;"RFM69_Breakout";;;
+24;"P9";"Pin_Header_Straight_2x01_Pitch2.54mm";1;"Range";;;
