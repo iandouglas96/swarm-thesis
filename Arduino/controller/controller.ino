@@ -103,8 +103,10 @@ void loop() {
   if (Serial.available() > 0) {
     Command[CommandLength] = Serial.read();
     CommandLength++;
+    
     //First char in the command string gives the total length
-    if (CommandLength==Command[0]) {
+    //Just send message if we have filled the send buffer
+    if (CommandLength==Command[0] || CommandLength == MAX_PACKET_LENGTH-1) {
       //We have reached the end of the command
       //Second char is the address, rest is the payload
       char targetAddress = Command[1];

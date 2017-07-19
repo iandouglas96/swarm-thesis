@@ -16,6 +16,11 @@ class EditDataPanel(BoxLayout):
 
         self.ids.verbose.active = node.verbose_flag
 
+        if (node.manual):
+            self.ids.manual_control.state = 'down'
+        else:
+            self.ids.manual_control.state = 'normal'
+
     def apply_changes(self):
         self.node.target_separation = int(self.ids.target_separation.text_box.text)
         self.node.attraction_const = int(self.ids.attraction_const.text_box.text)
