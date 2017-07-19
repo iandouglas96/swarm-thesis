@@ -93,9 +93,9 @@ void parseScan() {
       float bin = RawData[binNum][freq];
       //Are we above the noise floor?
 
-      if (freq==0) {
+      /*if (freq==0) {
         Serial.println(bin);
-      }
+      }*/
       
       if (bin > DETECTOR_FLOOR) {
         bool isPeak = true;
