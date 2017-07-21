@@ -1,4 +1,5 @@
 #include <plainRFM69.h>
+
 //915MHz in the US
 #define FREQUENCY 915
 
@@ -22,6 +23,11 @@ char ReceiveBuffer[MAX_PACKET_LENGTH];
 int CommandLength;
 
 char AckPacket[2] = {CONTROLLER_ID, 0x03};
+
+//The last time we received a message.  Used for timeout
+unsigned long LastTxTime = 0;
+
+#define TX_TIMEOUT_MS 100
 
 //Radio object
 plainRFM69 rfm = plainRFM69(SLAVE_SELECT_PIN);
@@ -101,6 +107,10 @@ void loop() {
 
   //Do we have any commands sent from the computer?
   if (Serial.available() > 0) {
+    //Reset counter
+    LastTxTime = millis();
+
+    //Read in next character
     Command[CommandLength] = Serial.read();
     CommandLength++;
     
@@ -113,6 +123,13 @@ void loop() {
       Command[1] = CONTROLLER_ID;
       rfm.sendAddressedVariable(targetAddress, &(Command[1]), CommandLength-1);
       
+      CommandLength = 0;
+    }
+
+    //If it's been a while since we last heard something, clear buffer
+    if (millis() - LastTxTime > TX_TIMEOUT_MS) {
+      //Reset counter
+      LastTxTime = millis();
       CommandLength = 0;
     }
   }
