@@ -103,6 +103,8 @@ void checkForCommands() {
           saveEepromData();
           //Apply the new ID
           rfm.setNodeAddress(ConstData.NodeID);
+          //Set new beacon freq
+          setBeacon(ConstData.Freq);
         }
         break;
       case DRIVE:

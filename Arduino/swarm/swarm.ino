@@ -30,8 +30,8 @@ void setup() {
   setupWireless();
   setupSteppers();
   
-  //start up at 1kHz
-  setBeacon(1000);
+  //start up the beacon
+  setBeacon(ConstData.Freq);
   //Start up stationary
   setSpeeds(0,0);
 }

@@ -14,27 +14,32 @@ typedef struct EEPROM_DATA {
   
   //Constants relating to swarm behavior
   unsigned int TargetSeparation;
-  unsigned int AttractionConst;
-  unsigned int RepulsionConst;
+  float AttractionConst;
+  float RepulsionConst;
   unsigned int AngularVelocityConst;
   unsigned int LinearVelocityConst;
+
+  //Frequency channel for beacon
+  unsigned int Freq;
 };
 
 //Checksum in memory immediately after above struct
 #define EEPROM_CHECKSUM_ADDRESS sizeof(EEPROM_DATA)  //Checksum
-#define EEPROM_CHECKSUM_DEFAULT 0x11223344
+#define EEPROM_CHECKSUM_DEFAULT 0x01010101
 
 //Default values for EEPROM
 const EEPROM_DATA EEPROM_DATA_DEFAULT = {
   254,              //NodeID
-
+  
   true,             //Verbose
   
   25,               //TargetSeparation
-  1,                //AttractionConst
-  2,                //RepulsionConst
+  1.0,              //AttractionConst
+  2.0,              //RepulsionConst
   50,               //AngularVelocityConst
-  10                //LinearVelocityConst
+  10,               //LinearVelocityConst
+
+  1000              //Freq
 };
 
 extern EEPROM_DATA ConstData;
