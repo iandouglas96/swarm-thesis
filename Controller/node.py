@@ -97,8 +97,8 @@ class Node():
     def command_motion(self):
         #only send command if something changed, so we don't spam the comm system
         if (self.old_matrix != self.key_matrix):
-            r_speed = 200*(self.key_matrix[UP]-self.key_matrix[DOWN])+100*(self.key_matrix[LEFT]-self.key_matrix[RIGHT])
-            l_speed = 200*(self.key_matrix[UP]-self.key_matrix[DOWN])+100*(self.key_matrix[RIGHT]-self.key_matrix[LEFT])
+            r_speed = 150*(self.key_matrix[UP]-self.key_matrix[DOWN])+100*(self.key_matrix[LEFT]-self.key_matrix[RIGHT])
+            l_speed = 150*(self.key_matrix[UP]-self.key_matrix[DOWN])+100*(self.key_matrix[RIGHT]-self.key_matrix[LEFT])
 
             #payload, assemble!
             args = struct.pack(FORMATS[DRIVE_COMMAND], r_speed, l_speed)
