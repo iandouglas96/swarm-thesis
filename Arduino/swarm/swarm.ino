@@ -128,6 +128,19 @@ void calcMovement(float forcefwd, float forceside) {
   
     int angularv = (int)(ConstData.AngularVelocityConst * force_angle);
     int linearv = (int)(ConstData.LinearVelocityConst * force_mag * cos(force_angle));
+
+    //Set limits
+    if (linearv > 400) {
+      linearv = 400;
+    } else if (linearv < -400) {
+      linearv = -400;
+    }
+
+    if (angularv > 300) {
+      angularv = 300;
+    } else if (angularv < -300) {
+      angularv = -300;
+    }
   
     /*Serial.println(force_angle);
     Serial.print("move: ");
@@ -145,5 +158,5 @@ void calcMovement(float forcefwd, float forceside) {
 //Convert FFT magnitude values to distances.
 double magToCm(float magnitude) {
   //empirically determined calibration curve
-  return pow(magnitude/1933.1, -0.54);
+  return pow(magnitude/5429.0, -0.456);
 }

@@ -12,6 +12,8 @@ AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 #define DETECTOR_FLOOR 0.03
 //Width of peak (must be odd)
 #define MIN_PEAK_WIDTH 5
+//Min distance b/w peaks (degrees)
+#define MIN_PEAK_SEPARATION 20
 
 //Number of degrees servo lags behind stated value (experimentally determined)
 #define SERVO_LAG_COMP 8
@@ -101,6 +103,7 @@ void parseScan() {
         bool isPeak = true;
         float sum = 0;
         float lastVal = 0;
+        //Check nearby angles to make sure we have a local max
         for (int i=-(MIN_PEAK_WIDTH-1)/2; i<=(MIN_PEAK_WIDTH-1)/2; i++) {
           int nearBinNum = binNum+i;
           //Handle wrapping
@@ -119,6 +122,27 @@ void parseScan() {
 
         if (isPeak) {
           //We have a peak!
+          //Ok, let's not be too hasty.  Are there any nearby peaks we've already detected?
+          for (int i=0; i<MAX_TARGETS; i++) {
+            if (TargetsInProgress[i].magnitude != 0 && TargetsInProgress[i].bin == freq) {
+              //We have another nonzero peak in the same frequency range
+              int separation = angle-TargetsInProgress[i].direction;
+              if (separation > 180) {
+                separation = 360-separation;
+              }
+              if (separation < MIN_PEAK_SEPARATION) {
+                //Peaks too close together 
+                //Use whichever one is bigger
+                TargetsInProgress[i].magnitude = TargetsInProgress[i].magnitude > sum ? TargetsInProgress[i].magnitude : sum;
+                TargetsInProgress[i].direction = TargetsInProgress[i].magnitude > sum ? TargetsInProgress[i].direction : angle;
+                isPeak = false;
+              }
+            }
+          }
+        }
+
+        if (isPeak) {
+          //We gucci, make a new peak
           TargetsInProgress[NumTargets].magnitude = sum;
           TargetsInProgress[NumTargets].direction = angle;
           TargetsInProgress[NumTargets].bin = freq; 
