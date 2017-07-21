@@ -25,11 +25,21 @@ class Controller(BoxLayout):
 
     #Pass data to panel to be populatedd
     def new_selection(self, node):
+        self.set_visible_node(True)
         self.ids.data_panel.disp_node(node)
         self.ids.sensor_disp.disp_node(node)
 
     def update_callback(self):
         self.ids.sensor_disp.update()
+
+    def set_visible_node(self, visible):
+        if (not visible):
+            #"hide" by moving way off screen
+            self.ids.data_panel.y = 5000
+            self.ids.sensor_disp.y = 5000
+        else:
+            self.ids.data_panel.y = 0
+            self.ids.sensor_disp.y = 0
 
 class ControllerApp(App):
     def build(self):

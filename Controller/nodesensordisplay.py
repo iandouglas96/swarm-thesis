@@ -22,7 +22,6 @@ class NodeSensorDisplay(Widget):
                 #we are supposed to display something...
                 for target in self.node.target_list:
                     dist = 4*((target['magnitude']/5428)**-(1/2.191))
-                    print dist
                     theta = -math.radians(target['direction'])+math.pi/2
                     x_pos = int(dist*math.cos(theta))
                     y_pos = int(dist*math.sin(theta))

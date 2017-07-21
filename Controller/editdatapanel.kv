@@ -4,6 +4,7 @@
   height: '40dp'
   size_hint_y: None
   label: ''
+  input_type: 'int'
   text_box: text_input
   Label:
     size_hint_x: None
@@ -12,29 +13,39 @@
     text: root.label
   TextInput:
     id: text_input
-    input_filter: 'int'
+    input_filter: root.input_type
     multiline: False
 
 <EditDataPanel>:
   orientation: 'vertical'
   DataEntry:
+    id: node_id
+    input_type: 'int'
+    label: 'Node ID:'
+  DataEntry:
     id: target_separation
+    input_type: 'int'
     label: 'Separation:'
   DataEntry:
     id: attraction_const
+    input_type: 'float'
     label: 'Attraction:'
   DataEntry:
     id: repulsion_const
+    input_type: 'float'
     label: 'Repulsion:'
   DataEntry:
     id: angular_v_const
+    input_type: 'int'
     label: 'Angular V:'
   DataEntry:
     id: linear_v_const
+    input_type: 'int'
     label: 'Linear V:'
   DataEntry:
-    id: node_id
-    label: 'Node ID:'
+    id: freq
+    input_type: 'int'
+    label: 'Frequency:'
   BoxLayout:
     orientation: 'horizontal'
     height: '40dp'

@@ -15,7 +15,7 @@ class Node():
         self.set_data(data)
         self.current_id = self.node_id
         self.comm = ser
-        self.manual = False
+        self.manual = True
         #u, r, d, l
         self.key_matrix = [False, False, False, False]
         self.old_matrix = [False, False, False, False]
@@ -29,13 +29,15 @@ class Node():
         self.repulsion_const = data[DUMP_DATA_REPULSION_CONST]
         self.angular_v_const = data[DUMP_DATA_ANGULAR_VELOCITY_CONST]
         self.linear_v_const = data[DUMP_DATA_LINEAR_VELOCITY_CONST]
+        self.freq = data[DUMP_DATA_FREQ]
 
     #Update prefs over communication link
     def send_data(self):
         #pack all the data we want to send
         args = struct.pack(FORMATS[DUMP_COMMAND], self.node_id, self.verbose_flag,
                             self.target_separation, self.attraction_const,
-                            self.repulsion_const, self.angular_v_const, self.linear_v_const)
+                            self.repulsion_const, self.angular_v_const, self.linear_v_const,
+                            self.freq)
 
         #send the command
         self.comm.send_command(self.current_id, SET_CONSTS_COMMAND, args)
@@ -43,7 +45,9 @@ class Node():
         #Now the ID has actually changed
         self.current_id = self.node_id
 
+    #turn off or on manual mode
     def set_manual(self, manual):
+        self.manual = manual
         if (manual):
             #take over the keyboard
             Window.bind(on_key_down=self.key_down)
@@ -60,6 +64,17 @@ class Node():
 
             #return to auto control
             self.comm.send_command(self.current_id, AUTO_COMMAND)
+
+    #called when user changes focus to or away
+    def set_active(self, active):
+        if (active and self.manual):
+            #take over the keyboard
+            Window.bind(on_key_down=self.key_down)
+            Window.bind(on_key_up=self.key_up)
+        elif (not active and self.manual):
+            #relinquish the keyboard
+            Window.unbind(on_key_down=self.key_down)
+            Window.unbind(on_key_up=self.key_up)
 
     def key_down(self, window, key, *args):
         if (key == 273):

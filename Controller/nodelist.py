@@ -44,8 +44,6 @@ class NodeRowEntry(RecycleDataViewBehavior, BoxLayout):
 
 class NodeList(BoxLayout):
     index = None
-    selected = BooleanProperty(False)
-    selectable = BooleanProperty(True)
 
     def __init__(self, **kwargs):
         super(NodeList, self).__init__(**kwargs)
@@ -53,23 +51,48 @@ class NodeList(BoxLayout):
         self.update_check = Clock.schedule_interval(self.check_for_updates, 1/10)
 
     def scan(self):
+        self.parent.set_visible_node(False)
+
         #scan for robotsjj
         node_list = self.parent.comm.send_command(BROADCAST_ID, DUMP_COMMAND)
         print node_list
         #populate list with list of detected nodes
         #create new Node objects to contain relevant information
-        self.rv.data = []
-        self.rv.data = [{'value': "ID: "+str(node['data'][DUMP_DATA_NODE_ID]), 'id_num':node['data'][DUMP_DATA_NODE_ID], 'data':Node(node['data'], self.parent.comm)} for node in node_list]
+        for new_node in node_list:
+            is_new = True
+            for old_node in self.node_list:
+                print "updating node..."
+                if (new_node['data'][DUMP_DATA_NODE_ID] == old_node['data'].node_id):
+                    #we saw someone we already saw.  Just update their data
+                    is_new = False
+                    old_node['data'].set_data(new_node['data'])
+                    old_node['value'] = "ID: "+str(old_node['data'].node_id)
+            if (is_new):
+                print "new node found..."
+                self.node_list.append({'value': "ID: "+str(new_node['data'][DUMP_DATA_NODE_ID]), 'data':Node(new_node['data'], self.parent.comm)})
+
+        #now go through and remove stuff that doesn't matter
+        for old_node in self.node_list:
+            is_gone = True
+            for new_node in node_list:
+                if (new_node['data'][DUMP_DATA_NODE_ID] == old_node['data'].node_id):
+                    is_gone = False
+            if (is_gone):
+                print "node gone :("
+                self.node_list.remove(old_node)
+
+        #force list display to reload!
+        self.rv.refresh_from_data()
 
     def new_selection(self, index):
         #Pass back to the highest level so it knows what to do
-        self.parent.new_selection(self.rv.data[index]['data'])
+        self.parent.new_selection(self.node_list[index]['data'])
 
     def check_for_updates(self, dt):
         update_data = self.parent.comm.check_for_updates()
         if (update_data != None):
             #Find the node which the update data came from
-            relevant_node = filter(lambda node: node['id_num'] == update_data['id_num'], self.rv.data)
+            relevant_node = filter(lambda node: node['data'].node_id == update_data['id_num'], self.node_list)
             if (len(relevant_node) > 0):
                 relevant_node[0]['data'].update(update_data['cmd'], update_data['data'])
                 self.parent.update_callback()

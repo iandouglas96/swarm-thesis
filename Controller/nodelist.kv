@@ -15,6 +15,7 @@
 <NodeList>:
   rv: node_list_view
   orientation: 'vertical'
+  node_list: []
   Button:
     size_hint_y: None
     text: 'Scan'
@@ -25,6 +26,7 @@
     scroll_type: ['bars', 'content']
     bar_width: dp(10)
     viewclass: 'NodeRowEntry'
+    data: root.node_list
     SelectableRecycleBoxLayout:
       default_size: None, dp(56)
       default_size_hint: 1, None
