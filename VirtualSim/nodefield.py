@@ -1,6 +1,7 @@
 from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock
 
+from constants import *
 from node import Node
 import math
 
@@ -33,3 +34,17 @@ class NodeField(FloatLayout):
     def update(self, dt):
         for node in self.node_list:
             node.update()
+
+    def process_cmd(self, target_id, cmd):
+        if (target_id == BROADCAST_ID):
+            #send command to everyone
+            for node in self.node_list:
+                node.process_cmd(cmd)
+        else:
+            #send command to target only
+            for node in self.node_list:
+                if (node.node_id == target_id):
+                    node.process_cmd(cmd)
+
+    def send_reply(self, sender, target, cmd, reply):
+        self.parent.ser.send_reply_packet(sender, target, cmd, reply)

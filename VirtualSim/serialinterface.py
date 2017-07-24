@@ -21,8 +21,19 @@ class SerialInterface:
         #return True if there is something in the queue
         return not self.rx.empty()
 
+    def get_next_packet(self):
+        return self.rx.get()
+
     def get_port_name(self):
         return self.port_name
+
+    def send_reply_packet(self, sender, target, cmd, reply):
+        #assemble packet
+        packet = chr(len(reply)+4)+chr(sender)+chr(0x00)+chr(cmd)+reply
+        print "sending: " + str([hex(ord(c)) for c in packet])
+        #send it
+        self.tx.put(packet)
+        return
 
 class TxManager(threading.Thread):
     def __init__(self, port, tx_queue, args=(), kwargs=None):
@@ -30,11 +41,13 @@ class TxManager(threading.Thread):
         self.tx_queue = tx_queue
         #quit when the parent quits
         self.daemon = True
+        self.port = port
 
     #This method is called when thread is started
     def run(self):
         #Loop 4eva
         while True:
+            #get command will block until a packet arrives
             msg = self.tx_queue.get()
             os.write(self.port, msg)
 

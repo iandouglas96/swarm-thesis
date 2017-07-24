@@ -1,8 +1,12 @@
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty
 from kivy.clock import Clock
+
+from constants import *
+
 import math
 import random
+import struct
 
 class Node(Widget):
     #link node_id to the .kv file by making it a kivy property
@@ -12,13 +16,14 @@ class Node(Widget):
         super(Node, self).__init__(**kwargs)
         #configuration numbers
         self.node_id = kwargs['id_num']
-        self.verbose = False
+        self.verbose_flag = False
         self.target_separation = 25
         self.attraction_const = 1
         self.repulsion_const = 2
         self.angular_v_const = 50
         self.linear_v_const = 10
         self.bin = 0
+        self.freq = 1000
 
         self.linear_v = 0
         self.angular_v = 0
@@ -79,3 +84,12 @@ class Node(Widget):
         self.pos[0] += 5 * self.linear_v/500 * math.cos(math.radians(self.angle))
         self.pos[1] += 5 * self.linear_v/500 * math.sin(math.radians(self.angle))
         self.angle += self.angular_v/100
+
+    def process_cmd(self, cmd):
+        payload = ""
+        if (ord(cmd[0]) == DUMP_COMMAND):
+            payload = struct.pack(FORMATS[DUMP_COMMAND], self.node_id, self.verbose_flag,
+                                  self.target_separation, self.attraction_const,
+                                  self.repulsion_const, self.angular_v_const, self.linear_v_const,
+                                  self.freq)
+        self.field.send_reply(self.node_id, CONTROLLER_ID, ord(cmd[0]), payload)

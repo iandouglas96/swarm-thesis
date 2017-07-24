@@ -6,6 +6,8 @@ Config.set('graphics', 'height', '800')
 
 import os
 
+from constants import *
+
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.clock import Clock
@@ -26,7 +28,9 @@ class VirtualSim(FloatLayout):
 
     def check_for_commands(self, dt):
         while (self.ser.has_packets()):
-            pass
+            cmd = self.ser.get_next_packet()
+            print "received: "+str([hex(ord(c)) for c in cmd])
+            self.ids.node_field.process_cmd(ord(cmd[1]), cmd[2:])
 
 class VirtualSimApp(App):
     def build(self):
