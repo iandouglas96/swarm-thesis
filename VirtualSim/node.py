@@ -25,6 +25,8 @@ class Node(Widget):
         self.bin = 0
         self.freq = 1000
 
+        self.manual = True
+
         self.linear_v = 0
         self.angular_v = 0
         #reference back to the node field
@@ -56,7 +58,8 @@ class Node(Widget):
                 force_fwd += force_mag*math.cos(n['direction'])
                 force_side += force_mag*math.sin(n['direction'])
 
-        self.calc_movement(force_fwd, force_side)
+        if (not self.manual):
+            self.calc_movement(force_fwd, force_side)
 
     def calc_movement(self, force_fwd, force_side):
         #convert force vector to motion settings
@@ -81,8 +84,8 @@ class Node(Widget):
             self.linear_v = 0
 
     def update(self):
-        self.pos[0] += 5 * self.linear_v/500 * math.cos(math.radians(self.angle))
-        self.pos[1] += 5 * self.linear_v/500 * math.sin(math.radians(self.angle))
+        self.pos[0] += 5 * (self.linear_v/500.0) * math.cos(math.radians(self.angle))
+        self.pos[1] += 5 * (self.linear_v/500.0) * math.sin(math.radians(self.angle))
         self.angle += self.angular_v/100
 
     def process_cmd(self, cmd):
@@ -92,4 +95,10 @@ class Node(Widget):
                                   self.target_separation, self.attraction_const,
                                   self.repulsion_const, self.angular_v_const, self.linear_v_const,
                                   self.freq)
-        self.field.send_reply(self.node_id, CONTROLLER_ID, ord(cmd[0]), payload)
+            self.field.send_reply(self.node_id, CONTROLLER_ID, ord(cmd[0]), payload)
+        if (ord(cmd[0]) == DRIVE_COMMAND):
+            #get information back
+            speeds = struct.unpack(FORMATS[DRIVE_COMMAND], cmd[1:])
+
+            self.linear_v = (speeds[0]+speeds[1])/2
+            self.angular_v = (speeds[0]-speeds[1])/2
