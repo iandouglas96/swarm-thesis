@@ -25,14 +25,16 @@ class Node(Widget):
         self.bin = 0
         self.freq = 1000
 
-        self.manual = True
+        self.manual = False
 
         self.linear_v = 0
         self.angular_v = 0
         #reference back to the node field
         self.field = kwargs['field']
+
         self.pos = [300+random.random()*200, 300+random.random()*200]
         self.angle = random.random()*360
+
         Clock.schedule_once(self.setup_scan, random.random()*1)
 
     #callback function to create random offset for update scans
@@ -70,13 +72,13 @@ class Node(Widget):
 
             #put angle in the +-90 degree range
             while (force_angle > math.pi/2):
-              force_angle -= math.pi;
-              force_mag *= -1;
+                force_angle -= math.pi;
+                force_mag *= -1;
             while (force_angle < -math.pi/2):
-              force_angle += math.pi;
-              force_mag *= -1;
+                force_angle += math.pi;
+                force_mag *= -1;
 
-            self.angular_v = (self.angular_v_const * force_angle);
+            self.angular_v = -(self.angular_v_const * force_angle);
             self.linear_v = (self.linear_v_const * force_mag * math.cos(force_angle));
         else:
             #stop
@@ -86,7 +88,7 @@ class Node(Widget):
     def update(self):
         self.pos[0] += 5 * (self.linear_v/500.0) * math.cos(math.radians(self.angle))
         self.pos[1] += 5 * (self.linear_v/500.0) * math.sin(math.radians(self.angle))
-        self.angle += self.angular_v/100
+        self.angle += self.angular_v/100.0
 
     def process_cmd(self, cmd):
         payload = ""
@@ -96,9 +98,12 @@ class Node(Widget):
                                   self.repulsion_const, self.angular_v_const, self.linear_v_const,
                                   self.freq)
             self.field.send_reply(self.node_id, CONTROLLER_ID, ord(cmd[0]), payload)
-        if (ord(cmd[0]) == DRIVE_COMMAND):
+        elif (ord(cmd[0]) == DRIVE_COMMAND):
             #get information back
+            self.manual = True
             speeds = struct.unpack(FORMATS[DRIVE_COMMAND], cmd[1:])
 
             self.linear_v = (speeds[0]+speeds[1])/2
             self.angular_v = (speeds[0]-speeds[1])/2
+        elif (ord(cmd[0]) == AUTO_COMMAND):
+            self.manual = False
