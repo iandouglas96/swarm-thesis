@@ -12,7 +12,7 @@ class NodeField(FloatLayout):
 
         #generate a bunch of robots
         self.node_list = []
-        for n in range(2,4):
+        for n in range(2,20):
             #create and configure nodes
             node = Node(id_num=n, field=self)
             self.add_widget(node)

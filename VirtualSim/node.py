@@ -17,11 +17,11 @@ class Node(Widget):
         #configuration numbers
         self.node_id = kwargs['id_num']
         self.verbose_flag = False
-        self.target_separation = 25
+        self.target_separation = 40
         self.attraction_const = 1
         self.repulsion_const = 2
         self.angular_v_const = 50
-        self.linear_v_const = 10
+        self.linear_v_const = 3
         self.bin = 0
         self.freq = 1000
 
@@ -32,7 +32,7 @@ class Node(Widget):
         #reference back to the node field
         self.field = kwargs['field']
 
-        self.pos = [300+random.random()*200, 300+random.random()*200]
+        self.pos = [600+random.random()*200, 600+random.random()*200]
         self.angle = random.random()*360
 
         Clock.schedule_once(self.setup_scan, random.random()*1)
@@ -86,8 +86,10 @@ class Node(Widget):
             self.linear_v = 0
 
     def update(self):
-        self.pos[0] += 5 * (self.linear_v/500.0) * math.cos(math.radians(self.angle))
-        self.pos[1] += 5 * (self.linear_v/500.0) * math.sin(math.radians(self.angle))
+        if (abs(self.linear_v) > 1):
+            self.linear_v = math.copysign(50, self.linear_v)
+        self.pos[0] += 5 * (self.linear_v/1000.0) * math.cos(math.radians(self.angle))
+        self.pos[1] += 5 * (self.linear_v/1000.0) * math.sin(math.radians(self.angle))
         self.angle += self.angular_v/100.0
 
     def process_cmd(self, cmd):

@@ -15,7 +15,7 @@
 #define RESET_PIN 1
 
 // Pin DIO 2 on the RFM69 is attached to this digital pin.
-#define DIO2_PIN 0
+#define DIO2_PIN 2
 
 //Buffer to hold command to send
 char Command[MAX_PACKET_LENGTH];
