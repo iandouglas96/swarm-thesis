@@ -22,7 +22,6 @@ class Node(Widget):
         self.repulsion_const = 2
         self.angular_v_const = 50
         self.linear_v_const = 3
-        self.bin = 0
         self.freq = 1000
 
         self.manual = False
@@ -35,21 +34,34 @@ class Node(Widget):
         self.pos = [600+random.random()*200, 600+random.random()*200]
         self.angle = random.random()*360
 
+        #Setup scan with initial random delay to be asynchronous
         Clock.schedule_once(self.setup_scan, random.random()*1)
 
     #callback function to create random offset for update scans
     def setup_scan(self, dt):
         Clock.schedule_interval(self.process_targets, 1)
 
+    def send_target_update(self, targets):
+        cnt = 0
+        buf = bytearray(struct.calcsize(UPDATE_FORMATS[TARGET_LIST_UPDATE]));
+        for t in targets:
+            #Are we close enough to target that sensor would actually see it?
+            if (t['distance'] < 60 and cnt < 10):
+                struct.pack_into('fhh', buf, struct.calcsize('fhh')*cnt, (t['distance']**(-2.191))*5428, math.degrees(t['direction']), t['freq'])
+                cnt += 1
+        self.field.send_update(self.node_id, CONTROLLER_ID, TARGET_LIST_UPDATE, buf)
+
     def process_targets(self, dt):
         #"scan" for the list of relative target locations
-        self.targets = self.field.scan_for_neighbors(self)
+        targets = self.field.scan_for_neighbors(self)
+        if (self.verbose_flag):
+            self.send_target_update(targets)
 
         #figure out force vector
         force_fwd = 0
         force_side = 0
 
-        for n in self.targets:
+        for n in targets:
             if (n['distance'] < self.target_separation*1.5):
                 force_mag = 0
                 if (n['distance'] > self.target_separation):
@@ -109,3 +121,13 @@ class Node(Widget):
             self.angular_v = (speeds[0]-speeds[1])/2
         elif (ord(cmd[0]) == AUTO_COMMAND):
             self.manual = False
+        elif (ord(cmd[0]) == SET_CONSTS_COMMAND):
+            data_struct = struct.unpack(FORMATS[DUMP_COMMAND], cmd[1:])
+            self.node_id = data_struct[DUMP_DATA_NODE_ID]
+            self.verbose_flag = data_struct[DUMP_DATA_VERBOSE]
+            self.target_separation = data_struct[DUMP_DATA_TARGET_SEPARATION]
+            self.attraction_const = data_struct[DUMP_DATA_ATTRACTION_CONST]
+            self.repulsion_const = data_struct[DUMP_DATA_REPULSION_CONST]
+            self.angular_v_const = data_struct[DUMP_DATA_ANGULAR_VELOCITY_CONST]
+            self.linear_v_const = data_struct[DUMP_DATA_LINEAR_VELOCITY_CONST]
+            self.freq = data_struct[DUMP_DATA_FREQ]

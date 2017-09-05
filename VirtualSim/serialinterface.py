@@ -35,6 +35,16 @@ class SerialInterface:
         self.tx.put(packet)
         return
 
+    def send_update_packet(self, sender, target, update_type, update):
+        #length is nbd in this case, so we'll send one jumbo packet
+        packet = chr(len(update)+6)+chr(sender)+chr(0x01)+chr(update_type)+chr(0x00)+chr(0x00)+update
+        print len(update)
+        print len(packet)
+        print "sending: " + str([hex(c) for c in packet])
+        #send it
+        self.tx.put(packet)
+        return
+
 class TxManager(threading.Thread):
     def __init__(self, port, tx_queue, args=(), kwargs=None):
         threading.Thread.__init__(self, args=(), kwargs=None)

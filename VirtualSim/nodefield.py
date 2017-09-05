@@ -27,7 +27,7 @@ class NodeField(FloatLayout):
             if (n != node):
                 dist = math.sqrt((n.pos[0]-node.pos[0])**2+(n.pos[1]-node.pos[1])**2)/5
                 angle = -(math.atan2(n.pos[1]-node.pos[1], n.pos[0]-node.pos[0])-math.radians(node.angle))
-                list.append({'distance':dist, 'direction':angle, 'bin':n.bin})
+                list.append({'distance':dist, 'direction':angle, 'freq':n.freq})
 
         return list
 
@@ -48,3 +48,6 @@ class NodeField(FloatLayout):
 
     def send_reply(self, sender, target, cmd, reply):
         self.parent.ser.send_reply_packet(sender, target, cmd, reply)
+
+    def send_update(self, sender, target, update_type, update):
+        self.parent.ser.send_update_packet(sender, target, update_type, update)

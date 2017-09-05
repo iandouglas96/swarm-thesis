@@ -106,5 +106,7 @@ class SerialInterface:
                     return {"id_num":header_struct[HEADER_SENDER], "cmd":header_struct[HEADER_COMMAND], "data":data_struct}
                 except struct.error:
                     print "Data not of correct format.  Raw data: " + str([hex(ord(c)) for c in self.update_data])
+                    # print len(self.update_data)
+                    # print struct.calcsize(UPDATE_FORMATS[header_struct[HEADER_COMMAND]])
 
                     return
