@@ -23,6 +23,7 @@ class Node(Widget):
         self.angular_v_const = 50
         self.linear_v_const = 3
         self.freq = 1000
+        self.color = FREQUENCY_BIN_COLORS[FREQUENCIES[self.freq]]
 
         self.manual = False
 
@@ -47,7 +48,7 @@ class Node(Widget):
         for t in targets:
             #Are we close enough to target that sensor would actually see it?
             if (t['distance'] < 60 and cnt < 10):
-                struct.pack_into('fhh', buf, struct.calcsize('fhh')*cnt, (t['distance']**(-2.191))*5428, math.degrees(t['direction']), t['freq'])
+                struct.pack_into('fhh', buf, struct.calcsize('fhh')*cnt, (t['distance']**(-2.191))*5428, math.degrees(t['direction']), t['bin'])
                 cnt += 1
         self.field.send_update(self.node_id, CONTROLLER_ID, TARGET_LIST_UPDATE, buf)
 
@@ -131,3 +132,4 @@ class Node(Widget):
             self.angular_v_const = data_struct[DUMP_DATA_ANGULAR_VELOCITY_CONST]
             self.linear_v_const = data_struct[DUMP_DATA_LINEAR_VELOCITY_CONST]
             self.freq = data_struct[DUMP_DATA_FREQ]
+            self.color = FREQUENCY_BIN_COLORS[FREQUENCIES[self.freq]]

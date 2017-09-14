@@ -176,7 +176,7 @@ void loop(){
     pinMode(SENDER_DETECT_PIN, INPUT_PULLUP);
     delay(5);
 
-    receiver();
-    //sender();
+    //receiver();
+    sender();
 }
 
