@@ -12,7 +12,7 @@ class Node(Widget):
     #link node_id to the .kv file by making it a kivy property
     node_id = NumericProperty(0)
 
-    def __init__(self, **kwargs):
+    def __init__(self, freq = 1000, **kwargs):
         super(Node, self).__init__(**kwargs)
         #configuration numbers
         self.node_id = kwargs['id_num']
@@ -22,7 +22,7 @@ class Node(Widget):
         self.repulsion_const = 2
         self.angular_v_const = 50
         self.linear_v_const = 3
-        self.freq = 1000
+        self.freq = freq
         self.color = FREQUENCY_BIN_COLORS[FREQUENCIES[self.freq]]
 
         self.manual = False

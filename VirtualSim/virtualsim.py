@@ -32,6 +32,10 @@ class VirtualSim(FloatLayout):
             print "received: "+str([hex(ord(c)) for c in cmd])
             self.ids.node_field.process_cmd(ord(cmd[1]), cmd[2:])
 
+    def gen_adjacencies(self):
+        print self.ids.node_field.gen_adjacencies()
+        self.ids.node_field.pause_sim()
+
 class VirtualSimApp(App):
     def build(self):
         return VirtualSim()

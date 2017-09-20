@@ -4,6 +4,7 @@ from kivy.clock import Clock
 from constants import *
 from node import Node
 import math
+import numpy as np
 
 #This class acts as the "field" that nodes move around on.  Manages list of nodes as a group
 class NodeField(FloatLayout):
@@ -12,14 +13,29 @@ class NodeField(FloatLayout):
 
         #generate a bunch of robots
         self.node_list = []
-        for n in range(2,20):
+        for n in range(2,8):
             #create and configure nodes
-            node = Node(id_num=n, field=self)
+            node = Node(id_num=n, freq = 1000+(n-2)*200, field=self)
             self.add_widget(node)
             self.node_list.append(node)
 
         #create clock to regularly update movement (60fps)
+        self.updating = True
         self.update_clock = Clock.schedule_interval(self.update, 1/60)
+
+    def pause_sim(self):
+        self.updating = False
+
+    #generate adjacency list, assuming all frequencies are unique
+    def gen_adjacencies(self):
+        #create a new array to hold the data
+        adj = np.zeros((len(self.node_list),len(self.node_list),2))
+        for n in self.node_list:
+            for adj_n in self.scan_for_neighbors(n):
+                adj[FREQUENCIES[n.freq]][adj_n['bin']][0] = adj_n['distance']*np.cos(adj_n['direction'])
+                adj[FREQUENCIES[n.freq]][adj_n['bin']][1] = adj_n['distance']*np.sin(adj_n['direction'])
+        np.save('adj.npy', adj)
+        return adj
 
     def scan_for_neighbors(self, node):
         list = []
@@ -32,8 +48,9 @@ class NodeField(FloatLayout):
         return list
 
     def update(self, dt):
-        for node in self.node_list:
-            node.update()
+        if (self.updating):
+            for node in self.node_list:
+                node.update()
 
     def process_cmd(self, target_id, cmd):
         if (target_id == BROADCAST_ID):
