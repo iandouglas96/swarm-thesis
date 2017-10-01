@@ -3,6 +3,8 @@ from scipy.optimize import minimize
 from graphics import *
 import random
 import math
+import timeit
+import csv
 
 # Basically just a struct to store node data
 class Node:
@@ -41,9 +43,10 @@ def scan_for_neighbors(node, node_list):
             dist = math.sqrt((n.pos[0]-node.pos[0])**2+(n.pos[1]-node.pos[1])**2)
             angle = -(math.atan2(n.pos[1]-node.pos[1], n.pos[0]-node.pos[0])-math.radians(node.angle))
             # add error
-            # dist += np.random.normal(0, 10)
-            # angle += np.random.normal(0, 0.1)
-            list.append({'distance': dist, 'direction': angle, 'bin': n.id_num})
+            #dist += np.random.normal(0, 10)
+            #angle += np.random.normal(0, 0.1)
+            if (dist < 500):
+                list.append({'distance': dist, 'direction': angle, 'bin': n.id_num})
 
     return list
 
@@ -52,8 +55,6 @@ def scan_for_neighbors(node, node_list):
 def normalize_pts(pts1, pts2):
     A = pts1[:, 0:2]
     B = pts2[:, 0:2]
-    print A
-    print B
 
     assert len(A) == len(B)
 
@@ -88,7 +89,6 @@ def normalize_pts(pts1, pts2):
 
     pts1[:, 0:2] = A2
     # rotate the rotations
-    print R
     pts1[:, 2] += math.atan2(R[0][1], R[0][0])
 
     # calculate the error
@@ -118,9 +118,9 @@ def sum_errors(p):
                 D[n][m][1] = (p[m][0]-p[n][0])*np.sin(p[n][2])+(p[m][1]-p[n][1])*np.cos(p[n][2])
 
     # Find all differences
-    errors = D-Dp
+    D -= Dp
     # sum of sqaure of errors
-    return np.sum(np.square(errors))
+    return np.sum(np.square(D))
 
 # Dp = np.array([[[0,0], [-1,1], [0,2], [0,0]],[[-1,-1], [0,0], [1,-1], [1,0]],[[-2,0], [-1,1], [0,0], [0,1]],[[0,0], [1,0], [0,1], [0,0]]])
 # load data
@@ -129,22 +129,48 @@ def sum_errors(p):
 # noise = np.random.normal(0, 10, Dp_raw.size)
 # noise = np.reshape(noise, Dp_raw.shape)
 
-# generate random config
-pts_act = gen_configuration(10)
+#open file for writing
+csvfile = open(name="data.csv", mode='wb')
+csvwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+csvwriter.writerow(['num', 'err_solve', 'error_abs', 'time'])
 
-# try to minimize error
-x0 = np.zeros((Dp.shape[0], 3))
-out = minimize(sum_errors, x0)
+for i in range(0, 1):
+    # generate random config
+    num = 10
 
-# format stuff nicely and output
-pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
-err = normalize_pts(pts, pts_act)
+    print "iter "+str(i) + ": "+ str(num)+" nodes"
 
-print out
-print "=================================="
-print pts
-print "Final error: "+str(out.fun)
-print "Actual error: "+str(err)
+    pts_act = gen_configuration(num)
+
+    # try to minimize error
+    x0 = np.zeros((Dp.shape[0], 3))
+
+    #Run minimization, but also time execution
+    start_time = timeit.default_timer()
+    out = minimize(fun=sum_errors, x0=x0, method='SLSQP')
+    solve_time = timeit.default_timer() - start_time
+
+    # format stuff nicely and output
+    pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
+    err = normalize_pts(pts, pts_act)
+
+    # print out
+    # print "=================================="
+    # print pts
+    # print "Final error: "+str(out.fun)
+    # print "Actual error: "+str(err)
+
+    #if we have a solver failure, say something!
+    if (err > 0.001):
+        print out
+        print "=================================="
+        print pts
+        print "Final error: "+str(out.fun)
+        print "Actual error: "+str(err)
+
+    csvwriter.writerow([num, out.fun, err, solve_time])
+
+csvfile.close()
 
 # draw calculated locations on screen
 win = GraphWin("plot", 500, 500)
