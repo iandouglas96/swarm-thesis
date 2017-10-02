@@ -84,6 +84,8 @@ class NodeList(BoxLayout):
         #force list display to reload!
         self.rv.refresh_from_data()
 
+        self.parent.set_list(self.node_list)
+
     def new_selection(self, index):
         #Pass back to the highest level so it knows what to do
         self.parent.new_selection(self.node_list[index]['data'])

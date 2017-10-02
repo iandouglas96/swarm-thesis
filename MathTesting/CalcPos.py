@@ -14,7 +14,6 @@ class Node:
         self.id_num = id_num
 
 def gen_configuration(num_nodes):
-    global Dp
     node_list = []
     pts = np.zeros((num_nodes, 3))
     # Create nodes
@@ -34,7 +33,7 @@ def gen_configuration(num_nodes):
             Dp[n.id_num][adj_n['bin']][0] = adj_n['distance']*np.cos(adj_n['direction'])
             Dp[n.id_num][adj_n['bin']][1] = adj_n['distance']*np.sin(adj_n['direction'])
 
-    return pts
+    return pts, Dp
 
 def scan_for_neighbors(node, node_list):
     list = []
@@ -102,9 +101,7 @@ def normalize_pts(pts1, pts2):
 # n is the robot number, v the position vector (x,y,theta)
 # we also have another matrix, Dp[n][m][v] giving the measured rel pos
 # n,m give the robot number, v the x,y components
-def sum_errors(p):
-    # load up the measured input data
-    global Dp
+def sum_errors(p, *args):
     # reformat p to be easier to work with
     p = np.reshape(p, (p.shape[0]/3, 3))
     # create the matrix
@@ -118,7 +115,7 @@ def sum_errors(p):
                 D[n][m][1] = (p[m][0]-p[n][0])*np.sin(p[n][2])+(p[m][1]-p[n][1])*np.cos(p[n][2])
 
     # Find all differences
-    D -= Dp
+    D -= args[0]
     # sum of sqaure of errors
     return np.sum(np.square(D))
 
@@ -136,18 +133,19 @@ csvwriter.writerow(['num', 'err_solve', 'error_abs', 'time'])
 
 for i in range(0, 1):
     # generate random config
-    num = 10
+    num = 6
 
     print "iter "+str(i) + ": "+ str(num)+" nodes"
 
-    pts_act = gen_configuration(num)
+    pts_act, Dp = gen_configuration(num)
 
     # try to minimize error
     x0 = np.zeros((Dp.shape[0], 3))
 
     #Run minimization, but also time execution
     start_time = timeit.default_timer()
-    out = minimize(fun=sum_errors, x0=x0, method='SLSQP')
+    #args has to be a tuple, because of weird numpy problems
+    out = minimize(fun=sum_errors, x0=x0, args=(Dp,), method='SLSQP')
     solve_time = timeit.default_timer() - start_time
 
     # format stuff nicely and output

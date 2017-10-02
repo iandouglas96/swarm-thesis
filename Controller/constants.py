@@ -41,5 +41,5 @@ TARGET_LIST_UPDATE_BIN = 2
 TARGET_LIST_NUM_TARGETS = 10
 
 #List of frequencies with their bins
-FREQUENCIES = {1000:0, 1200:1, 1400:2, 1600:3}
-FREQUENCY_BIN_COLORS = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1)]
+FREQUENCIES = {1000:0, 1200:1, 1400:2, 1600:3, 1800:4, 2000:5}
+FREQUENCY_BIN_COLORS = [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 1), (1, 0, 1, 1), (0, 1, 1, 1)]

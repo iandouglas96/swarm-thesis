@@ -1,4 +1,6 @@
 from kivy.core.window import Window
+from kivy.uix.widget import Widget
+from kivy.properties import NumericProperty
 from constants import *
 from serialinterface import SerialInterface
 import struct
@@ -9,8 +11,12 @@ DOWN = 2
 LEFT = 3
 
 #A Class for keeping track of robot data
-class Node():
-    def __init__(self, data, ser):
+class Node(Widget):
+    #link node_id to the .kv file by making it a kivy property
+    node_id = NumericProperty(0)
+
+    def __init__(self, data, ser, **kwargs):
+        super(Node, self).__init__(**kwargs)
         #parse data
         self.set_data(data)
         self.current_id = self.node_id
@@ -19,6 +25,7 @@ class Node():
         #u, r, d, l
         self.key_matrix = [False, False, False, False]
         self.old_matrix = [False, False, False, False]
+        self.target_list = []
 
     #Parse data struct
     def set_data(self, data):
@@ -30,6 +37,7 @@ class Node():
         self.angular_v_const = data[DUMP_DATA_ANGULAR_VELOCITY_CONST]
         self.linear_v_const = data[DUMP_DATA_LINEAR_VELOCITY_CONST]
         self.freq = data[DUMP_DATA_FREQ]
+        self.color = FREQUENCY_BIN_COLORS[FREQUENCIES[self.freq]]
 
     #Update prefs over communication link
     def send_data(self):
