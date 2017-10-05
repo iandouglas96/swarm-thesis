@@ -8,18 +8,18 @@
     Rotate:
       axis: 0,0,1
       angle: (self.angle)
-      origin: (1050+self.pos[0]+self.n_width/2, 250+self.pos[1]+self.n_width/2)
+      origin: (1400+self.pos[0]+self.n_width/2, 500-self.pos[1]+self.n_width/2)
     Color:
       rgba: self.color
     Rectangle:
       size: (self.n_width,self.n_width)
-      pos: (self.pos[0]+1050, 250+self.pos[1])
+      pos: (self.pos[0]+1400, 500-self.pos[1])
     Color:
       rgba: (0, 0, 0, 0.2)
     Rectangle:
       size: (self.n_width/2,self.n_width)
-      pos: (self.pos[0]+1050, 250+self.pos[1])
+      pos: (self.pos[0]+1400, 500-self.pos[1])
     PopMatrix
   Label:
     text: str(root.node_id)
-    pos: (1050+root.pos[0]-root.n_width/2, 250+root.pos[1]-root.n_width/2)
+    pos: (1400+root.pos[0]-root.n_width/2, 500-root.pos[1]-root.n_width/2)

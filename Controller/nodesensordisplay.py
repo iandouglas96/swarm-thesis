@@ -59,21 +59,30 @@ def normalize_pts(pts1, pts2):
 # n is the robot number, v the position vector (x,y,theta)
 # we also have another matrix, Dp[n][m][v] giving the measured rel pos
 # n,m give the robot number, v the x,y components
-def sum_errors(p, Dp):
+def sum_errors(p, *args):
     # reformat p to be easier to work with
     p = np.reshape(p, (p.shape[0]/3, 3))
     # create the matrix
     D = np.zeros((p.shape[0], p.shape[0], 2))
 
-    for n in range(0, p.shape[0]):
-        for m in range(0, p.shape[0]):
-            # only find relative distance if we have the measured data
-            if (Dp[n][m].any()):
-                D[n][m][0] = (p[m][0]-p[n][0])*np.cos(p[n][2])-(p[m][1]-p[n][1])*np.sin(p[n][2])
-                D[n][m][1] = (p[m][0]-p[n][0])*np.sin(p[n][2])+(p[m][1]-p[n][1])*np.cos(p[n][2])
+    #find difference matrices
+    px_outer = -np.subtract.outer(p[:, 0], p[:, 0])
+    py_outer = -np.subtract.outer(p[:, 1], p[:, 1])
+    #trig stuff
+    cos_mat = np.cos(p[:, 2])
+    sin_mat = np.sin(p[:, 2])
 
+    #x-component
+    D[:,:,0] = np.multiply(px_outer, cos_mat[:, np.newaxis])
+    D[:,:,0] -= np.multiply(py_outer, sin_mat[:, np.newaxis])
+    #y-component
+    D[:,:,1] = np.multiply(px_outer, sin_mat[:, np.newaxis])
+    D[:,:,1] += np.multiply(py_outer, cos_mat[:, np.newaxis])
+
+    #remove data that we don't have sensor data for
+    D = np.multiply(D, args[0].any(axis = 2)[:, :, np.newaxis])
     # Find all differences
-    D -= Dp
+    D -= args[0]
     # sum of sqaure of errors
     return np.sum(np.square(D))
 
@@ -103,12 +112,17 @@ class NodeSensorDisplay(Widget):
             out = minimize(fun=sum_errors, x0=x0, args=(Dp,), method='SLSQP')
 
             # format stuff nicely and output
-            pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
+            self.pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
+            if (hasattr(self, 'last_pts')):
+                #align points to be closest to the las
+                normalize_pts(self.pts, self.last_pts)
 
             #update nodes with postitions and angles
             for i in range(0, len(self.node_list)):
-                self.node_list[i].pos = [int(pts[i][0]), -int(pts[i][1])]
-                self.node_list[i].angle = int(np.degrees(pts[i][2]))
+                self.node_list[i].pos = [int(self.pts[i][0]), -int(self.pts[i][1])]
+                self.node_list[i].angle = int(np.degrees(self.pts[i][2]))
+
+            self.last_pts = np.copy(self.pts)
 
     #generate adjacency list, assuming all frequencies are unique
     def gen_adjacencies(self):

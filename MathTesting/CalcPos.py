@@ -42,9 +42,9 @@ def scan_for_neighbors(node, node_list):
             dist = math.sqrt((n.pos[0]-node.pos[0])**2+(n.pos[1]-node.pos[1])**2)
             angle = -(math.atan2(n.pos[1]-node.pos[1], n.pos[0]-node.pos[0])-math.radians(node.angle))
             # add error
-            #dist += np.random.normal(0, 10)
-            #angle += np.random.normal(0, 0.1)
-            if (dist < 500):
+            dist += np.random.normal(0, 10)
+            angle += np.random.normal(0, 0.1)
+            if (dist < 200):
                 list.append({'distance': dist, 'direction': angle, 'bin': n.id_num})
 
     return list
@@ -107,13 +107,22 @@ def sum_errors(p, *args):
     # create the matrix
     D = np.zeros((p.shape[0], p.shape[0], 2))
 
-    for n in range(0, p.shape[0]):
-        for m in range(0, p.shape[0]):
-            # only find relative distance if we have the measured data
-            if (Dp[n][m].any()):
-                D[n][m][0] = (p[m][0]-p[n][0])*np.cos(p[n][2])-(p[m][1]-p[n][1])*np.sin(p[n][2])
-                D[n][m][1] = (p[m][0]-p[n][0])*np.sin(p[n][2])+(p[m][1]-p[n][1])*np.cos(p[n][2])
+    #find difference matrices
+    px_outer = -np.subtract.outer(p[:, 0], p[:, 0])
+    py_outer = -np.subtract.outer(p[:, 1], p[:, 1])
+    #trig stuff
+    cos_mat = np.cos(p[:, 2])
+    sin_mat = np.sin(p[:, 2])
 
+    #x-component
+    D[:,:,0] = np.multiply(px_outer, cos_mat[:, np.newaxis])
+    D[:,:,0] -= np.multiply(py_outer, sin_mat[:, np.newaxis])
+    #y-component
+    D[:,:,1] = np.multiply(px_outer, sin_mat[:, np.newaxis])
+    D[:,:,1] += np.multiply(py_outer, cos_mat[:, np.newaxis])
+
+    #remove data that we don't have sensor data for
+    D = np.multiply(D, args[0].any(axis = 2)[:, :, np.newaxis])
     # Find all differences
     D -= args[0]
     # sum of sqaure of errors
@@ -133,7 +142,7 @@ csvwriter.writerow(['num', 'err_solve', 'error_abs', 'time'])
 
 for i in range(0, 1):
     # generate random config
-    num = 6
+    num = 20
 
     print "iter "+str(i) + ": "+ str(num)+" nodes"
 
@@ -147,6 +156,8 @@ for i in range(0, 1):
     #args has to be a tuple, because of weird numpy problems
     out = minimize(fun=sum_errors, x0=x0, args=(Dp,), method='SLSQP')
     solve_time = timeit.default_timer() - start_time
+
+    print solve_time
 
     # format stuff nicely and output
     pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
