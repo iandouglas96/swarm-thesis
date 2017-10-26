@@ -90,7 +90,8 @@ class NodeSensorDisplay(Widget):
     def __init__(self, **kwargs):
         super(NodeSensorDisplay, self).__init__(**kwargs)
         self.node_list = []
-        Clock.schedule_interval(self.update, 1)
+        self.has_init = False
+        self.timer = Clock.schedule_interval(self.update, 1)
 
     def set_list(self, node_list):
         self.node_list = []
@@ -101,28 +102,49 @@ class NodeSensorDisplay(Widget):
         print self.node_list
 
     def update(self, dt):
-        print "updating"
-        Dp = self.gen_adjacencies()
+        if (not self.has_init):
+            print "initializing"
+            Dp = self.gen_adjacencies()
 
-        if (Dp.any()):
-            # try to minimize error
-            x0 = np.zeros((Dp.shape[0], 3))
+            if (Dp.any()):
+                # try to minimize error
+                x0 = np.zeros((Dp.shape[0], 3))
 
-            #args has to be a tuple, because of weird numpy problems
-            out = minimize(fun=sum_errors, x0=x0, args=(Dp,), method='SLSQP')
+                #args has to be a tuple, because of weird numpy problems
+                out = minimize(fun=sum_errors, x0=x0, args=(Dp,), method='SLSQP')
 
-            # format stuff nicely and output
-            self.pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
-            if (hasattr(self, 'last_pts')):
-                #align points to be closest to the las
-                normalize_pts(self.pts, self.last_pts)
+                # format stuff nicely and output
+                self.pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
+                if (hasattr(self, 'last_pts')):
+                    #align points to be closest to the last
+                    normalize_pts(self.pts, self.last_pts)
 
-            #update nodes with postitions and angles
-            for i in range(0, len(self.node_list)):
-                self.node_list[i].pos = [int(self.pts[i][0]), -int(self.pts[i][1])]
-                self.node_list[i].angle = int(np.degrees(self.pts[i][2]))
+                #update nodes with postitions and angles
+                all_reports_heard = True
+                for i in range(0, len(self.node_list)):
+                    if (len(self.node_list[i].target_list) == 0):
+                        all_reports_heard = False
+                    self.node_list[i].pos = [int(self.pts[i][0]), int(self.pts[i][1])]
+                    self.node_list[i].angle = int(np.degrees(self.pts[i][2]))
+                    
+                #If all robots have adjancencies, we are fully initialized
+                self.has_init = all_reports_heard
+                
+                if (all_reports_heard):
+                    print "Initialized"
+                    #init all the ekfs
+                    for n in self.node_list:
+                        n.ekf_init()
+                    self.timer.cancel()
+                    self.timer = Clock.schedule_interval(self.update, 1./60)
+                    
 
-            self.last_pts = np.copy(self.pts)
+                self.last_pts = np.copy(self.pts)
+        else:
+            #print "Ready for EKF"
+            for n in self.node_list:
+                n.ekf_predict(dt)
+            pass
 
     #generate adjacency list, assuming all frequencies are unique
     def gen_adjacencies(self):
@@ -131,7 +153,7 @@ class NodeSensorDisplay(Widget):
         adj = np.zeros((len(self.node_list),len(self.node_list),2))
         for n in self.node_list:
             for adj_n in n.target_list:
-                dist = 4*((adj_n['magnitude']/5428)**-(1/2.191))
+                dist = 5*((adj_n['magnitude']/5428)**-(1/2.191))
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][0] = dist*np.cos(np.radians(adj_n['direction']))
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][1] = dist*np.sin(np.radians(adj_n['direction']))
         return adj

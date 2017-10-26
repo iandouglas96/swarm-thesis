@@ -29,11 +29,11 @@ class VirtualSim(FloatLayout):
     def check_for_commands(self, dt):
         while (self.ser.has_packets()):
             cmd = self.ser.get_next_packet()
-            print "received: "+str([hex(ord(c)) for c in cmd])
+            #print "received: "+str([hex(ord(c)) for c in cmd])
             self.ids.node_field.process_cmd(ord(cmd[1]), cmd[2:])
 
     def gen_adjacencies(self):
-        print self.ids.node_field.gen_adjacencies()
+        #print self.ids.node_field.gen_adjacencies()
         self.ids.node_field.pause_sim()
 
 class VirtualSimApp(App):

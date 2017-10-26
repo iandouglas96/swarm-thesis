@@ -7,6 +7,7 @@ from constants import *
 import math
 import random
 import struct
+import numpy as np
 
 class Node(Widget):
     #link node_id to the .kv file by making it a kivy property
@@ -20,12 +21,12 @@ class Node(Widget):
         self.target_separation = 40
         self.attraction_const = 1
         self.repulsion_const = 2
-        self.angular_v_const = 50
-        self.linear_v_const = 3
+        self.angular_v_const = 10
+        self.linear_v_const = 1
         self.freq = freq
         self.color = FREQUENCY_BIN_COLORS[FREQUENCIES[self.freq]]
 
-        self.manual = False
+        self.manual = True
 
         self.linear_v = 0
         self.angular_v = 0
@@ -34,6 +35,7 @@ class Node(Widget):
 
         self.pos = [600+random.random()*200, 600+random.random()*200]
         self.angle = random.random()*360
+        self.fxu = np.array([[self.pos[0]], [self.pos[1]], [np.radians(self.angle)]])
 
         #Setup scan with initial random delay to be asynchronous
         Clock.schedule_once(self.setup_scan, random.random()*1)
@@ -93,17 +95,49 @@ class Node(Widget):
 
             self.angular_v = -(self.angular_v_const * force_angle);
             self.linear_v = (self.linear_v_const * force_mag * math.cos(force_angle));
+            
+            print self.angular_v, self.linear_v
         else:
             #stop
             self.angular_v = 0
             self.linear_v = 0
 
-    def update(self):
-        if (abs(self.linear_v) > 1):
-            self.linear_v = math.copysign(50, self.linear_v)
-        self.pos[0] += 5 * (self.linear_v/1000.0) * math.cos(math.radians(self.angle))
-        self.pos[1] += 5 * (self.linear_v/1000.0) * math.sin(math.radians(self.angle))
-        self.angle += self.angular_v/100.0
+    def update(self, dt):
+        #if (abs(self.linear_v) > 1):
+        #   self.linear_v = math.copysign(50, self.linear_v)
+        
+        #wheelbase width
+        l = 50.   
+
+        Vl = float(self.linear_v + self.angular_v)
+        Vr = float(self.linear_v - self.angular_v)
+        
+        if (Vl == Vr):
+            Vl += 0.00001
+        #calculate R to ICC
+        R = (l/4)*(Vl+Vr)/(Vr-Vl)
+        omega = (Vr-Vl)/l
+        
+        #calculate ICC position
+        ICC = np.array([self.fxu[0][0]-(R*np.sin(self.fxu[2][0])), self.fxu[1][0]+(R*np.cos(self.fxu[2][0]))])
+
+        #calculate the measurement matrix
+        rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
+                             [np.sin(omega*dt), np.cos(omega*dt), 0],
+                             [0, 0, 1]])
+                           
+        self.fxu = rotation.dot(np.array([[self.fxu[0][0]-ICC[0]], [self.fxu[1][0]-ICC[1]], [self.fxu[2][0]]]))
+
+        self.fxu = self.fxu + np.array([[ICC[0]], [ICC[1]], [omega*dt]])
+        
+        self.pos[0] = int(self.fxu[0][0])
+        self.pos[1] = int(self.fxu[1][0])
+        self.angle = int(np.degrees(self.fxu[2][0]))
+        
+        #self.pos[0] += (self.linear_v/60.0) * math.cos(math.radians(self.angle))
+        #self.pos[1] += (self.linear_v/60.0) * math.sin(math.radians(self.angle))
+        #self.angle_float += math.degrees((self.angular_v/25.)/60)
+        #self.angle = int(self.angle_float)
 
     def process_cmd(self, cmd):
         payload = ""
@@ -120,6 +154,7 @@ class Node(Widget):
 
             self.linear_v = (speeds[0]+speeds[1])/2
             self.angular_v = (speeds[0]-speeds[1])/2
+            print self.linear_v, self.angular_v
         elif (ord(cmd[0]) == AUTO_COMMAND):
             self.manual = False
         elif (ord(cmd[0]) == SET_CONSTS_COMMAND):

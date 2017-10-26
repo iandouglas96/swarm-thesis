@@ -13,7 +13,7 @@ class NodeField(FloatLayout):
 
         #generate a bunch of robots
         self.node_list = []
-        for n in range(2,8):
+        for n in range(2,7):
             #create and configure nodes
             node = Node(id_num=n, freq = 1000+(n-2)*200, field=self)
             self.add_widget(node)
@@ -50,7 +50,7 @@ class NodeField(FloatLayout):
     def update(self, dt):
         if (self.updating):
             for node in self.node_list:
-                node.update()
+                node.update(dt)
 
     def process_cmd(self, target_id, cmd):
         if (target_id == BROADCAST_ID):

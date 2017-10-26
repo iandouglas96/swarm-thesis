@@ -96,7 +96,7 @@ class NodeList(BoxLayout):
             #Find the node which the update data came from
             relevant_node = filter(lambda node: node['data'].node_id == update_data['id_num'], self.node_list)
             if (len(relevant_node) > 0):
-                relevant_node[0]['data'].update(update_data['cmd'], update_data['data'])
+                relevant_node[0]['data'].update(update_data['cmd'], update_data['data'], self.node_list)
                 self.parent.update_callback()
             else:
                 print "Got update from nonexistent node.  Probably should scan"
