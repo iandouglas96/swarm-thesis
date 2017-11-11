@@ -103,10 +103,10 @@ class NodeSensorDisplay(Widget):
 
     def update(self, dt):
         if (not self.has_init):
-            print "initializing"
             Dp = self.gen_adjacencies()
 
             if (Dp.any()):
+                print "initializing"
                 # try to minimize error
                 x0 = np.zeros((Dp.shape[0], 3))
 
@@ -134,7 +134,7 @@ class NodeSensorDisplay(Widget):
                     print "Initialized"
                     #init all the ekfs
                     for n in self.node_list:
-                        n.ekf_init()
+                        n.ukf_init()
                     self.timer.cancel()
                     self.timer = Clock.schedule_interval(self.update, 1./60)
                     
@@ -144,7 +144,6 @@ class NodeSensorDisplay(Widget):
             #print "Ready for EKF"
             for n in self.node_list:
                 n.ukf_predict(dt)
-            pass
 
     #generate adjacency list, assuming all frequencies are unique
     def gen_adjacencies(self):

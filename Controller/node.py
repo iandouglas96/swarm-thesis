@@ -2,9 +2,6 @@ import sympy
 from sympy import symbols, Matrix
 import numpy as np
 
-from UKFFilter import UnscentedKalmanFilter as UKF
-from filterpy.kalman import unscented_transform, MerweScaledSigmaPoints
-
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty
@@ -13,10 +10,94 @@ from serialinterface import SerialInterface
 import struct
 import pdb
 
+#IMPORTANT: Import AFTER kivy stuff
+from UKFFilter import UnscentedKalmanFilter as UKF
+from filterpy.kalman import unscented_transform, MerweScaledSigmaPoints
+
 UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
+
+def move(x, u, dt, l):
+    #calculate R to ICC
+    Vl = u[0];
+    Vr = u[1];
+
+    #special case for straight motion
+    if (Vl == Vr):
+        Vl += 0.1
+    
+    R = (l/4)*(Vl+Vr)/(Vr-Vl)
+    omega = (Vr-Vl)/l
+    
+    #calculate ICC position
+    ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
+
+    #calculate the new transformed position
+    rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
+                       [np.sin(omega*dt), np.cos(omega*dt), 0],
+                       [0, 0, 1]])
+    fxu = rotation.dot(np.array([x[0]-ICC[0], x[1]-ICC[1], x[2]]))
+    return fxu + np.array([ICC[0], ICC[1], omega*dt])
+        
+def fx(x, dt, u):
+    return move(x, u, dt, 50.)
+
+def normalize_angle(x):
+    x = x % (2 * np.pi)    # force in range [0, 2 pi)
+    if x > np.pi:          # move to [-pi, pi)
+        x -= 2 * np.pi
+    return x
+    
+def residual_h(a, b):
+    y = a - b
+    for i in range(0, len(b), 2):
+        if (a[i] == 0 and a[i+1] == 0):
+            y[i] = 0
+            y[i+1] = 0
+    # data in format [dist_1, bearing_1, dist_2, bearing_2,...]
+    for i in range(0, len(y), 2):
+        y[i + 1] = normalize_angle(y[i + 1])
+    return y
+
+def residual_x(a, b):
+    y = a - b
+    y[2] = normalize_angle(y[2])
+    return y
+    
+def Hx(x, landmarks):
+    """ takes a state variable and returns the measurement
+    that would correspond to that state. """
+    hx = []
+    for lmark in landmarks:
+        px, py = lmark
+        dist = np.sqrt((px - x[0])**2 + (py - x[1])**2)
+        angle = np.arctan2(py - x[1], px - x[0])
+        hx.extend([dist, normalize_angle(angle - x[2])])
+    return np.array(hx)
+    
+def state_mean(sigmas, Wm):
+    x = np.zeros(3)
+
+    sum_sin = np.sum(np.dot(np.sin(sigmas[:, 2]), Wm))
+    sum_cos = np.sum(np.dot(np.cos(sigmas[:, 2]), Wm))
+    x[0] = np.sum(np.dot(sigmas[:, 0], Wm))
+    x[1] = np.sum(np.dot(sigmas[:, 1], Wm))
+    x[2] = np.arctan2(sum_sin, sum_cos)
+    return x
+
+def z_mean(sigmas, Wm):
+    z_count = sigmas.shape[1]
+    x = np.zeros(z_count)
+
+    for z in range(0, z_count, 2):
+        sum_sin = np.sum(np.dot(np.sin(sigmas[:, z+1]), Wm))
+        sum_cos = np.sum(np.dot(np.cos(sigmas[:, z+1]), Wm))
+
+        x[z] = np.sum(np.dot(sigmas[:,z], Wm))
+        x[z+1] = np.arctan2(sum_sin, sum_cos)
+    return x
 
 #Calculate the system propagation matrix
 def calc_system_mat(x_x, x_y, theta, l, Vl, Vr, time):
@@ -51,83 +132,6 @@ def calc_measurement_mat(x_x, x_y, theta, px, py):
     H_p = z.jacobian(Matrix([px, py])) 
     
     return z, H, H_p
-
-#UKF helper functions
-def move(x, u, dt, l):
-    #calculate R to ICC
-    Vl = u[0];
-    Vr = u[1];
-    
-    R = (l/4)*(Vl+Vr)/(Vr-Vl)
-    omega = (Vr-Vl)/l
-    
-    #calculate ICC position
-    ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
-
-    #calculate the new transformed position
-    rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
-                       [np.sin(omega*dt), np.cos(omega*dt), 0],
-                       [0, 0, 1]])
-    fxu = rotation.dot(np.array([x[0]-ICC[0], x[1]-ICC[1], x[2]]))
-    return fxu + np.array([ICC[0], ICC[1], omega*dt])
-        
-def fx(x, dt, u):
-    return move(x, u, dt, wheelbase)
-
-def normalize_angle(x):
-    x = x % (2 * np.pi)    # force in range [0, 2 pi)
-    if x > np.pi:          # move to [-pi, pi)
-        x -= 2 * np.pi
-    return x
-    
-def residual_h(a, b):
-    y = a - b
-    for i in range(0, len(b), 2):
-        if (a[i] == 0 and a[i+1] == 0):
-            y[i] = 0
-            y[i+1] = 0
-    # data in format [dist_1, bearing_1, dist_2, bearing_2,...]
-    for i in range(0, len(y), 2):
-        y[i + 1] = normalize_angle(y[i + 1])
-    return y
-
-def residual_x(a, b):
-    y = a - b
-    y[2] = normalize_angle(y[2])
-    return y
-    
-def Hx(x, landmarks):
-    """ takes a state variable and returns the measurement
-    that would correspond to that state. """
-    hx = []
-    for lmark in landmarks:
-        px, py = lmark
-        dist = sqrt((px - x[0])**2 + (py - x[1])**2)
-        angle = atan2(py - x[1], px - x[0])
-        hx.extend([dist, normalize_angle(angle - x[2])])
-    return np.array(hx)
-    
-def state_mean(sigmas, Wm):
-    x = np.zeros(3)
-
-    sum_sin = np.sum(np.dot(np.sin(sigmas[:, 2]), Wm))
-    sum_cos = np.sum(np.dot(np.cos(sigmas[:, 2]), Wm))
-    x[0] = np.sum(np.dot(sigmas[:, 0], Wm))
-    x[1] = np.sum(np.dot(sigmas[:, 1], Wm))
-    x[2] = atan2(sum_sin, sum_cos)
-    return x
-
-def z_mean(sigmas, Wm):
-    z_count = sigmas.shape[1]
-    x = np.zeros(z_count)
-
-    for z in range(0, z_count, 2):
-        sum_sin = np.sum(np.dot(np.sin(sigmas[:, z+1]), Wm))
-        sum_cos = np.sum(np.dot(np.cos(sigmas[:, z+1]), Wm))
-
-        x[z] = np.sum(np.dot(sigmas[:,z], Wm))
-        x[z+1] = atan2(sum_sin, sum_cos)
-    return x
 
 #A Class for keeping track of robot data
 class Node(Widget):
@@ -283,27 +287,37 @@ class Node(Widget):
             
     #Functions relating to EKF filtering of robot position
     def ukf_init(self):
-        print "ekf init"
+        print "ukf init"
         points = MerweScaledSigmaPoints(n=3, alpha=.00001, beta=2, kappa=0, 
                                     subtract=residual_x)
-        ukf = UKF(dim_x=3, dim_z=2*(len(landmarks)), fx=fx, hx=Hx,
-                  dt=dt, points=points, x_mean_fn=state_mean, 
+
+        self.ukf = UKF(dim_x=3, fx=fx, hx=Hx,
+                  dt=1./60, points=points, x_mean_fn=state_mean, 
                   z_mean_fn=z_mean, residual_x=residual_x, 
                   residual_z=residual_h)
-
-        #init initial covariance and state matrices
-        ukf.x = np.array([self.pos[0], self.pos[1], np.radians(self.angle)])
-        ukf.P = np.diag([10, 10, 0.2])
-        ukf.R = np.array([sigma_range**2, 
-                         sigma_bearing**2])
-        ukf.Q = np.eye(3)*0.0001
-    
-    def ukf_predict(self, dt):
-        ukf.predict(fx_args=self.control)
         
-        self.pos = ukf.x[0:2]
-        self.angle = np.degrees(ukf.x[2])
-    
+        #covariance and state matrices
+        self.ukf.x = np.array([self.pos[0],self.pos[1],np.radians(self.angle)])
+        self.ukf.P = np.diag([1, 1, 0.1])
+        #sensor noise
+        self.ukf.R = np.array([0.1**2, 
+                         0.05**2])
+        #process noise                 
+        self.ukf.Q = np.diag([0.01, 0.01, 0.001])
+        
+        #Run predict step to initialize.  Otherwise if we got a measurement before predict, we would crash
+        self.ukf_predict(0.0001)
+        
+    def ukf_predict(self, dt):
+        self.ukf.predict(fx_args=self.control, dt=dt)
+        
+        self.pos[0] = int(self.ukf.x[0])
+        self.pos[1] = int(self.ukf.x[1])
+        self.angle = int(np.degrees(self.ukf.x[2]))
+        
+    def ukf_update(self, z, l_pos):
+         self.ukf.update(z, hx_args=l_pos,)
+
     def process_targets(self):
         #figure out force vector
         force_fwd = 0
@@ -350,15 +364,17 @@ class Node(Widget):
     
     #generate landmark information     
     def proc_sen_data(self, node_list):
+        measurements = []
+        landmark_pos = np.empty((0,2), float)
         for target in self.target_list:
             dist = 5.*((target['magnitude']/5428.)**-(1/2.191))
-            measurement = np.array([[dist], [-np.radians(target['direction'])]])
             relevant_node = filter(lambda node: FREQUENCIES[node['data'].freq] == target['bin'], node_list)
             if (len(relevant_node) > 0):
-                landmark_pos = relevant_node[0]['data'].state[0:2, 0]
-                landmark_cov = relevant_node[0]['data'].cov[0:2, 0:2]
-            
-                #self.ukf_update(measurement, landmark_pos, landmark_cov)
+                measurements.extend([dist, -np.radians(target['direction'])])
+                landmark_pos = np.vstack([landmark_pos, relevant_node[0]['data'].ukf.x[0:2]])
+         
+        if (len(measurements) > 0):     
+            self.ukf_update(measurements, landmark_pos)
 
     def update(self, update_type, data, node_list):
         if (update_type == TARGET_LIST_UPDATE):
@@ -377,6 +393,6 @@ class Node(Widget):
             if (not self.manual):
                 self.process_targets()
               
-            #if the ekf is initialized, go for it
-            if (hasattr(self, 'cov')):
+            #if the ukf is initialized, go for it
+            if (hasattr(self, 'ukf')):
                 self.proc_sen_data(node_list)

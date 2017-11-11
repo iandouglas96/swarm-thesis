@@ -19,7 +19,7 @@ def move(x, u, dt, l):
     #calculate ICC position
     ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
 
-    #calculate the new transformed position
+    #calculate the measurement matrix
     rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
                        [np.sin(omega*dt), np.cos(omega*dt), 0],
                        [0, 0, 1]])
@@ -96,7 +96,7 @@ def run_localization(
               z_mean_fn=z_mean, residual_x=residual_x, 
               residual_z=residual_h)
 
-    ukf.x = np.array([2, 6, 2.3])
+    ukf.x = np.array([2, 6, .3])
     ukf.P = np.diag([.1, .1, .05])
     ukf.R = np.array([sigma_range**2, 
                      sigma_bearing**2])
@@ -133,6 +133,7 @@ def run_localization(
                      randn()*sigma_bearing))
                 z.extend([d, a])
             
+            print z
             ukf.update(z, hx_args=landmarks[0:n+1],)
 
             if i % ellipse_step == 0:
@@ -149,7 +150,7 @@ def run_localization(
 dt = 1.0
 wheelbase = 0.5    
 landmarks = np.array([[5, 10], [10, 5], [15, 15], [7,7]])
-cmds = [np.array([1, 0.5])] * 200
+cmds = [np.array([1, 1.1])] * 200
 ukf = run_localization(
     cmds, landmarks, sigma_vel=0.1, sigma_steer=np.radians(1),
     sigma_range=1, sigma_bearing=0.1)
