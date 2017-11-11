@@ -1,9 +1,9 @@
 #This code modified from R. Labbe, "Kalman Filters in Python"
 
 from math import tan, sin, cos, sqrt, atan2
-from numpy.random import randn
+from numpy.random import randn, randint
 from filterpy.stats import plot_covariance_ellipse
-from filterpy.kalman import UnscentedKalmanFilter as UKF
+from UKFFilter import UnscentedKalmanFilter as UKF
 from filterpy.kalman import unscented_transform, MerweScaledSigmaPoints
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +19,7 @@ def move(x, u, dt, l):
     #calculate ICC position
     ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
 
-    #calculate the measurement matrix
+    #calculate the new transformed position
     rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
                        [np.sin(omega*dt), np.cos(omega*dt), 0],
                        [0, 0, 1]])
@@ -37,6 +37,10 @@ def normalize_angle(x):
     
 def residual_h(a, b):
     y = a - b
+    for i in range(0, len(b), 2):
+        if (a[i] == 0 and a[i+1] == 0):
+            y[i] = 0
+            y[i+1] = 0
     # data in format [dist_1, bearing_1, dist_2, bearing_2,...]
     for i in range(0, len(y), 2):
         y[i + 1] = normalize_angle(y[i + 1])
@@ -87,15 +91,15 @@ def run_localization(
     plt.figure()
     points = MerweScaledSigmaPoints(n=3, alpha=.00001, beta=2, kappa=0, 
                                     subtract=residual_x)
-    ukf = UKF(dim_x=3, dim_z=2*len(landmarks), fx=fx, hx=Hx,
+    ukf = UKF(dim_x=3, fx=fx, hx=Hx,
               dt=dt, points=points, x_mean_fn=state_mean, 
               z_mean_fn=z_mean, residual_x=residual_x, 
               residual_z=residual_h)
 
-    ukf.x = np.array([2, 6, .3])
+    ukf.x = np.array([2, 6, 2.3])
     ukf.P = np.diag([.1, .1, .05])
-    ukf.R = np.diag([sigma_range**2, 
-                     sigma_bearing**2]*len(landmarks))
+    ukf.R = np.array([sigma_range**2, 
+                     sigma_bearing**2])
     ukf.Q = np.eye(3)*0.0001
     
     sim_pos = np.array([2, 6, .3])
@@ -120,14 +124,16 @@ def run_localization(
 
             x, y = sim_pos[0], sim_pos[1]
             z = []
-            for lmark in landmarks:
+            n = randint(4)
+            for lmark in landmarks[0:n+1]:
                 dx, dy = lmark[0] - x, lmark[1] - y
                 d = sqrt(dx**2 + dy**2) + randn()*sigma_range
                 bearing = atan2(lmark[1] - y, lmark[0] - x)
                 a = (normalize_angle(bearing - sim_pos[2] + 
                      randn()*sigma_bearing))
-                z.extend([d, a])            
-            ukf.update(z, hx_args=(landmarks,))
+                z.extend([d, a])
+            
+            ukf.update(z, hx_args=landmarks[0:n+1],)
 
             if i % ellipse_step == 0:
                 plot_covariance_ellipse(
@@ -142,8 +148,8 @@ def run_localization(
 
 dt = 1.0
 wheelbase = 0.5    
-landmarks = np.array([[5, 10], [10, 5], [15, 15]])
-cmds = [np.array([1, 1.02])] * 200
+landmarks = np.array([[5, 10], [10, 5], [15, 15], [7,7]])
+cmds = [np.array([1, 0.5])] * 200
 ukf = run_localization(
     cmds, landmarks, sigma_vel=0.1, sigma_steer=np.radians(1),
     sigma_range=1, sigma_bearing=0.1)

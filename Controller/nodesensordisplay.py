@@ -143,7 +143,7 @@ class NodeSensorDisplay(Widget):
         else:
             #print "Ready for EKF"
             for n in self.node_list:
-                n.ekf_predict(dt)
+                n.ukf_predict(dt)
             pass
 
     #generate adjacency list, assuming all frequencies are unique

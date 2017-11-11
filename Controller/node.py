@@ -2,6 +2,9 @@ import sympy
 from sympy import symbols, Matrix
 import numpy as np
 
+from UKFFilter import UnscentedKalmanFilter as UKF
+from filterpy.kalman import unscented_transform, MerweScaledSigmaPoints
+
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty
@@ -48,6 +51,83 @@ def calc_measurement_mat(x_x, x_y, theta, px, py):
     H_p = z.jacobian(Matrix([px, py])) 
     
     return z, H, H_p
+
+#UKF helper functions
+def move(x, u, dt, l):
+    #calculate R to ICC
+    Vl = u[0];
+    Vr = u[1];
+    
+    R = (l/4)*(Vl+Vr)/(Vr-Vl)
+    omega = (Vr-Vl)/l
+    
+    #calculate ICC position
+    ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
+
+    #calculate the new transformed position
+    rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
+                       [np.sin(omega*dt), np.cos(omega*dt), 0],
+                       [0, 0, 1]])
+    fxu = rotation.dot(np.array([x[0]-ICC[0], x[1]-ICC[1], x[2]]))
+    return fxu + np.array([ICC[0], ICC[1], omega*dt])
+        
+def fx(x, dt, u):
+    return move(x, u, dt, wheelbase)
+
+def normalize_angle(x):
+    x = x % (2 * np.pi)    # force in range [0, 2 pi)
+    if x > np.pi:          # move to [-pi, pi)
+        x -= 2 * np.pi
+    return x
+    
+def residual_h(a, b):
+    y = a - b
+    for i in range(0, len(b), 2):
+        if (a[i] == 0 and a[i+1] == 0):
+            y[i] = 0
+            y[i+1] = 0
+    # data in format [dist_1, bearing_1, dist_2, bearing_2,...]
+    for i in range(0, len(y), 2):
+        y[i + 1] = normalize_angle(y[i + 1])
+    return y
+
+def residual_x(a, b):
+    y = a - b
+    y[2] = normalize_angle(y[2])
+    return y
+    
+def Hx(x, landmarks):
+    """ takes a state variable and returns the measurement
+    that would correspond to that state. """
+    hx = []
+    for lmark in landmarks:
+        px, py = lmark
+        dist = sqrt((px - x[0])**2 + (py - x[1])**2)
+        angle = atan2(py - x[1], px - x[0])
+        hx.extend([dist, normalize_angle(angle - x[2])])
+    return np.array(hx)
+    
+def state_mean(sigmas, Wm):
+    x = np.zeros(3)
+
+    sum_sin = np.sum(np.dot(np.sin(sigmas[:, 2]), Wm))
+    sum_cos = np.sum(np.dot(np.cos(sigmas[:, 2]), Wm))
+    x[0] = np.sum(np.dot(sigmas[:, 0], Wm))
+    x[1] = np.sum(np.dot(sigmas[:, 1], Wm))
+    x[2] = atan2(sum_sin, sum_cos)
+    return x
+
+def z_mean(sigmas, Wm):
+    z_count = sigmas.shape[1]
+    x = np.zeros(z_count)
+
+    for z in range(0, z_count, 2):
+        sum_sin = np.sum(np.dot(np.sin(sigmas[:, z+1]), Wm))
+        sum_cos = np.sum(np.dot(np.cos(sigmas[:, z+1]), Wm))
+
+        x[z] = np.sum(np.dot(sigmas[:,z], Wm))
+        x[z+1] = atan2(sum_sin, sum_cos)
+    return x
 
 #A Class for keeping track of robot data
 class Node(Widget):
@@ -202,80 +282,28 @@ class Node(Widget):
             self.old_matrix = self.key_matrix[:]
             
     #Functions relating to EKF filtering of robot position
-    def ekf_init(self):
+    def ukf_init(self):
         print "ekf init"
-        #covariance and state matrices
-        self.cov = np.diag([10, 10, 0.2])
-        self.state = np.array([[self.pos[0]],[self.pos[1]],[np.radians(self.angle)]])
-        
-        #covariance models
-        self.std_v = 5
+        points = MerweScaledSigmaPoints(n=3, alpha=.00001, beta=2, kappa=0, 
+                                    subtract=residual_x)
+        ukf = UKF(dim_x=3, dim_z=2*(len(landmarks)), fx=fx, hx=Hx,
+                  dt=dt, points=points, x_mean_fn=state_mean, 
+                  z_mean_fn=z_mean, residual_x=residual_x, 
+                  residual_z=residual_h)
+
+        #init initial covariance and state matrices
+        ukf.x = np.array([self.pos[0], self.pos[1], np.radians(self.angle)])
+        ukf.P = np.diag([10, 10, 0.2])
+        ukf.R = np.array([sigma_range**2, 
+                         sigma_bearing**2])
+        ukf.Q = np.eye(3)*0.0001
     
-    def ekf_predict(self, dt=1):
-        #control[0]-control[1] is in the denom of matrices.  If equal, get undefined behavior
-        if (np.abs(self.control[0] - self.control[1]) < 0.001):
-            self.control[0] += 0.001
+    def ukf_predict(self, dt):
+        ukf.predict(fx_args=self.control)
         
-        #calculate V and V
-        F = self.F_n(self.state[0][0], self.state[1][0], self.state[2][0], 50, self.control[0], self.control[1], dt)
-        V = self.V_n(self.state[0][0], self.state[1][0], self.state[2][0], 50, self.control[0], self.control[1], dt)
-        
-        #use f(x,u) to compute posterior
-        self.state = self.f_n(self.state[0][0], self.state[1][0], self.state[2][0], 50, self.control[0], self.control[1], dt)
-        
-#         print F
-#         print V
-#         print self.state
-        
-        #covariance matrix of error of control inputs
-        M = np.array([[self.std_v*self.control[0], 0],
-                      [0, self.std_v*self.control[1]]])
-        
-        #update covariance
-        self.cov = (F.dot(self.cov)).dot(F.T) + (V.dot(M)).dot(V.T)
-        
-        #update graphical location
-        self.pos[0] = int(self.state[0][0])
-        self.pos[1] = int(self.state[1][0])
-        self.angle = int(np.degrees(self.state[2][0]))
-        
-    def ekf_update(self, measurement, landmark_pos, landmark_cov):
-        #IEKF iteration
-        state_int = np.copy(self.state)
-        print "update"
-        for i in range(0,1):
-            #calculate the predicted value
-            h = self.z_n(state_int[0][0], state_int[1][0], state_int[2][0], landmark_pos[0], landmark_pos[1])
-            
-            #calculate the residual
-            y = measurement - h
-            
-            y[1] = y[1] % (2 * np.pi)    # force in range [0, 2 pi)
-            if y[1] > np.pi:             # move to [-pi, pi)
-                y[1] -= 2 * np.pi
-                
-            print y
-            
-            #generate H and R matrices
-            H = self.H_n(state_int[0][0], state_int[1][0], state_int[2][0], landmark_pos[0], landmark_pos[1])
-            H_p = self.H_p_n(state_int[0][0], state_int[1][0], state_int[2][0], landmark_pos[0], landmark_pos[1])
-            #R is sensor noise
-            R = np.diag([5, 5])
-
-            #calculate kalman gain
-            K = (self.cov.dot(H.T)).dot(np.linalg.inv((H.dot(self.cov)).dot(H.T) + (H_p.dot(landmark_cov)).dot(H_p.T) + R))
-            
-            #calculate new prior
-            last_state = np.copy(state_int)
-            state_int = self.state + K.dot(y-H.dot(self.state-state_int))
-        
-        #new covariance matrix
-        last_state = np.copy(self.state)
-        self.state = np.copy(state_int)
-        print self.state-last_state
-        self.cov = (np.eye(3)-K.dot(H)).dot(self.cov)
-        print self.cov
-
+        self.pos = ukf.x[0:2]
+        self.angle = np.degrees(ukf.x[2])
+    
     def process_targets(self):
         #figure out force vector
         force_fwd = 0
@@ -330,7 +358,7 @@ class Node(Widget):
                 landmark_pos = relevant_node[0]['data'].state[0:2, 0]
                 landmark_cov = relevant_node[0]['data'].cov[0:2, 0:2]
             
-                self.ekf_update(measurement, landmark_pos, landmark_cov)
+                #self.ukf_update(measurement, landmark_pos, landmark_cov)
 
     def update(self, update_type, data, node_list):
         if (update_type == TARGET_LIST_UPDATE):
