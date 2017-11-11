@@ -19,10 +19,10 @@ class Node(Widget):
         self.node_id = kwargs['id_num']
         self.verbose_flag = False
         self.target_separation = 40
-        self.attraction_const = 1
+        self.attraction_const = 2
         self.repulsion_const = 2
         self.angular_v_const = 10
-        self.linear_v_const = 1
+        self.linear_v_const = 3
         self.freq = freq
         self.color = FREQUENCY_BIN_COLORS[FREQUENCIES[self.freq]]
 
@@ -33,8 +33,8 @@ class Node(Widget):
         #reference back to the node field
         self.field = kwargs['field']
 
-        self.pos = [600+random.random()*200, 600+random.random()*200]
-        self.angle = random.random()*360
+        self.pos = [600+self.node_id*100, 600]
+        self.angle = 0
         self.fxu = np.array([[self.pos[0]], [self.pos[1]], [np.radians(self.angle)]])
 
         #Setup scan with initial random delay to be asynchronous
@@ -93,7 +93,7 @@ class Node(Widget):
                 force_angle += math.pi;
                 force_mag *= -1;
 
-            self.angular_v = -(self.angular_v_const * force_angle);
+            self.angular_v = (self.angular_v_const * force_angle);
             self.linear_v = (self.linear_v_const * force_mag * math.cos(force_angle));
             
             print self.angular_v, self.linear_v
@@ -154,7 +154,6 @@ class Node(Widget):
 
             self.linear_v = (speeds[0]+speeds[1])/2
             self.angular_v = (speeds[0]-speeds[1])/2
-            print self.linear_v, self.angular_v
         elif (ord(cmd[0]) == AUTO_COMMAND):
             self.manual = False
         elif (ord(cmd[0]) == SET_CONSTS_COMMAND):

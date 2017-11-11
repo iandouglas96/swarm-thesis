@@ -8,6 +8,7 @@ from kivy.properties import NumericProperty
 from constants import *
 from serialinterface import SerialInterface
 import struct
+import pdb
 
 UP = 0
 RIGHT = 1
@@ -208,12 +209,12 @@ class Node(Widget):
         self.state = np.array([[self.pos[0]],[self.pos[1]],[np.radians(self.angle)]])
         
         #covariance models
-        self.std_v = 0.1
+        self.std_v = 5
     
     def ekf_predict(self, dt=1):
         #control[0]-control[1] is in the denom of matrices.  If equal, get undefined behavior
-        if (self.control[0] == self.control[1]):
-            self.control[0] += 0.00001
+        if (np.abs(self.control[0] - self.control[1]) < 0.001):
+            self.control[0] += 0.001
         
         #calculate V and V
         F = self.F_n(self.state[0][0], self.state[1][0], self.state[2][0], 50, self.control[0], self.control[1], dt)
@@ -239,30 +240,41 @@ class Node(Widget):
         self.angle = int(np.degrees(self.state[2][0]))
         
     def ekf_update(self, measurement, landmark_pos, landmark_cov):
-        #calculate the predicted value
-        h = self.z_n(self.state[0][0], self.state[1][0], self.state[2][0], landmark_pos[0], landmark_pos[1])
-        
-        #calculate the residual
-        y = measurement - h
-        
-        y[1] = y[1] % (2 * np.pi)    # force in range [0, 2 pi)
-        if y[1] > np.pi:             # move to [-pi, pi)
-            y[1] -= 2 * np.pi
-        
-        #generate H and R matrices
-        H = self.H_n(self.state[0][0], self.state[1][0], self.state[2][0], landmark_pos[0], landmark_pos[1])
-        H_p = self.H_p_n(self.state[0][0], self.state[1][0], self.state[2][0], landmark_pos[0], landmark_pos[1])
-        #R is sensor noise
-        R = np.diag([0.1, 0.02])
-        
-        #calculate kalman gain
-        K = (self.cov.dot(H.T)).dot(np.linalg.inv((H.dot(self.cov)).dot(H.T) + (H_p.dot(landmark_cov)).dot(H_p.T) + R))
-        
-        #calculate new prior
-        self.state = self.state + K.dot(y)
+        #IEKF iteration
+        state_int = np.copy(self.state)
+        print "update"
+        for i in range(0,1):
+            #calculate the predicted value
+            h = self.z_n(state_int[0][0], state_int[1][0], state_int[2][0], landmark_pos[0], landmark_pos[1])
+            
+            #calculate the residual
+            y = measurement - h
+            
+            y[1] = y[1] % (2 * np.pi)    # force in range [0, 2 pi)
+            if y[1] > np.pi:             # move to [-pi, pi)
+                y[1] -= 2 * np.pi
+                
+            print y
+            
+            #generate H and R matrices
+            H = self.H_n(state_int[0][0], state_int[1][0], state_int[2][0], landmark_pos[0], landmark_pos[1])
+            H_p = self.H_p_n(state_int[0][0], state_int[1][0], state_int[2][0], landmark_pos[0], landmark_pos[1])
+            #R is sensor noise
+            R = np.diag([5, 5])
+
+            #calculate kalman gain
+            K = (self.cov.dot(H.T)).dot(np.linalg.inv((H.dot(self.cov)).dot(H.T) + (H_p.dot(landmark_cov)).dot(H_p.T) + R))
+            
+            #calculate new prior
+            last_state = np.copy(state_int)
+            state_int = self.state + K.dot(y-H.dot(self.state-state_int))
         
         #new covariance matrix
+        last_state = np.copy(self.state)
+        self.state = np.copy(state_int)
+        print self.state-last_state
         self.cov = (np.eye(3)-K.dot(H)).dot(self.cov)
+        print self.cov
 
     def process_targets(self):
         #figure out force vector
@@ -283,7 +295,6 @@ class Node(Widget):
                 force_fwd += force_mag*np.cos(np.radians(n['direction']))
                 force_side += force_mag*np.sin(np.radians(n['direction']))
         
-        print force_fwd, force_side
         angular_v, linear_v = self.calc_movement(force_fwd, force_side)
         self.control[0] = float(linear_v + angular_v)
         self.control[1] = float(linear_v - angular_v)
@@ -303,7 +314,7 @@ class Node(Widget):
                 force_angle += np.pi;
                 force_mag *= -1;
 
-            angular_v = -(self.angular_v_const * force_angle);
+            angular_v = (self.angular_v_const * force_angle);
             linear_v = (self.linear_v_const * force_mag * np.cos(force_angle));
             return angular_v, linear_v
         else:
@@ -312,7 +323,7 @@ class Node(Widget):
     #generate landmark information     
     def proc_sen_data(self, node_list):
         for target in self.target_list:
-            dist = 5*((target['magnitude']/5428)**-(1/2.191))
+            dist = 5.*((target['magnitude']/5428.)**-(1/2.191))
             measurement = np.array([[dist], [-np.radians(target['direction'])]])
             relevant_node = filter(lambda node: FREQUENCIES[node['data'].freq] == target['bin'], node_list)
             if (len(relevant_node) > 0):
@@ -325,12 +336,12 @@ class Node(Widget):
         if (update_type == TARGET_LIST_UPDATE):
             #clear out list before we load in new values
             self.target_list = []
-            for bin in range(0, TARGET_LIST_NUM_TARGETS):
+            for b in range(0, TARGET_LIST_NUM_TARGETS):
                 #verify that the magnitude is nonzero to see if it is a target
-                if (data[bin*3] != 0):
-                    target = {'magnitude':data[bin*3+TARGET_LIST_UPDATE_MAGNITUDE],
-                              'direction':data[bin*3+TARGET_LIST_UPDATE_DIRECTION],
-                              'bin':data[bin*3+TARGET_LIST_UPDATE_BIN]}
+                if (data[b*3+TARGET_LIST_UPDATE_MAGNITUDE] != 0):
+                    target = {'magnitude':data[b*3+TARGET_LIST_UPDATE_MAGNITUDE],
+                              'direction':data[b*3+TARGET_LIST_UPDATE_DIRECTION],
+                              'bin':data[b*3+TARGET_LIST_UPDATE_BIN]}
                     self.target_list.append(target)
             #print self.target_list
             

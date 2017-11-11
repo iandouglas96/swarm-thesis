@@ -121,6 +121,8 @@ def sum_errors(p, *args):
     D[:,:,1] = np.multiply(px_outer, sin_mat[:, np.newaxis])
     D[:,:,1] += np.multiply(py_outer, cos_mat[:, np.newaxis])
 
+    print D
+    
     #remove data that we don't have sensor data for
     D = np.multiply(D, args[0].any(axis = 2)[:, :, np.newaxis])
     # Find all differences
@@ -140,9 +142,9 @@ csvfile = open(name="data.csv", mode='wb')
 csvwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 csvwriter.writerow(['num', 'err_solve', 'error_abs', 'time'])
 
-for i in range(0, 100):
+for i in range(0, 1):
     # generate random config
-    num = 20
+    num = 10
 
     print "iter "+str(i) + ": "+ str(num)+" nodes"
 
