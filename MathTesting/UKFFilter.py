@@ -357,7 +357,7 @@ class UnscentedKalmanFilter(object):
         self.x = self.x + dot(self.K, self.y)
         self.P = self.P - dot3(self.K, Pz, self.K.T)
 
-        self.log_likelihood = logpdf(self.y, np.zeros(len(self.y)), Pz)
+        #self.log_likelihood = logpdf(self.y, np.zeros(len(self.y)), Pz)
 
 
     def cross_variance(self, x, z, sigmas_f, sigmas_h):
