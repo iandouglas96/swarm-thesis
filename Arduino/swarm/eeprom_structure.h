@@ -16,6 +16,12 @@ typedef struct EEPROM_DATA {
   unsigned int TargetSeparation;
   float AttractionConst;
   float RepulsionConst;
+
+  //Calibration values for sensor
+  float SensorCalib1;
+  float SensorCalib2;
+
+  //Translation constants for motion
   unsigned int AngularVelocityConst;
   unsigned int LinearVelocityConst;
 
@@ -25,7 +31,7 @@ typedef struct EEPROM_DATA {
 
 //Checksum in memory immediately after above struct
 #define EEPROM_CHECKSUM_ADDRESS sizeof(EEPROM_DATA)  //Checksum
-#define EEPROM_CHECKSUM_DEFAULT 0x01010101
+#define EEPROM_CHECKSUM_DEFAULT 0x11223344
 
 //Default values for EEPROM
 const EEPROM_DATA EEPROM_DATA_DEFAULT = {
@@ -36,6 +42,10 @@ const EEPROM_DATA EEPROM_DATA_DEFAULT = {
   25,               //TargetSeparation
   1.0,              //AttractionConst
   2.0,              //RepulsionConst
+
+  5429.0,           //SensorCalib1
+  -0.456,           //SensorCalib2
+  
   50,               //AngularVelocityConst
   10,               //LinearVelocityConst
 

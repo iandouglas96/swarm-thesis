@@ -58,21 +58,16 @@ void processTargets(TARGET targets[MAX_TARGETS]) {
   for (int i=0; i<MAX_TARGETS; i++) {
     //Look at all bins
     if (targets[i].magnitude != 0) {
-      //Nonzero magnitude means this is a real thing
-      //Convert magnitude to cm
-      float dist = magToCm(targets[i].magnitude);
-
-
-      if (dist < ConstData.TargetSeparation*1.5) {
+      if (targets[i].magnitude < ConstData.TargetSeparation*1.5) {
         //Note: repulsion is considered negative
         float force_mag = 0;
   
-        if (dist > ConstData.TargetSeparation) {
+        if (targets[i].magnitude > ConstData.TargetSeparation) {
           //attraction
-          force_mag = (dist-ConstData.TargetSeparation)*ConstData.AttractionConst;
-        } else if (dist < ConstData.TargetSeparation) {
+          force_mag = (targets[i].magnitude-ConstData.TargetSeparation)*ConstData.AttractionConst;
+        } else if (targets[i].magnitude < ConstData.TargetSeparation) {
           //repulsion
-          force_mag = (dist-ConstData.TargetSeparation)*ConstData.RepulsionConst;
+          force_mag = (targets[i].magnitude-ConstData.TargetSeparation)*ConstData.RepulsionConst;
         }
   
         //Get x and y force components so they can be added.  Convert angle to radians first
@@ -153,10 +148,4 @@ void calcMovement(float forcefwd, float forceside) {
     //stop
     setSpeeds(0,0);
   }
-}
-
-//Convert FFT magnitude values to distances.
-double magToCm(float magnitude) {
-  //empirically determined calibration curve
-  return pow(magnitude/5429.0, -0.456);
 }

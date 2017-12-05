@@ -81,6 +81,9 @@ TARGET * targetScan() {
       //Get ready for next scan
       dir *= -1;
       parseScan();
+      for (int i=0; i<MAX_TARGETS; i++) {
+        TargetsInProgress[i].magnitude = magToCm(TargetsInProgress[i].magnitude);
+      }
       return TargetsInProgress;
     }
   }
@@ -153,5 +156,11 @@ void parseScan() {
       }
     }
   }
+}
+
+//Convert FFT magnitude values to distances.
+double magToCm(float magnitude) {
+  //empirically determined calibration curve
+  return pow(magnitude/ConstData.SensorCalib1, ConstData.SensorCalib2);
 }
 
