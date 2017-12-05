@@ -22,6 +22,7 @@ class Controller(BoxLayout):
     def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
         self.comm = SerialInterface('/dev/tty.usbmodem1782091')
+        #self.comm = SerialInterface('/dev/ttys002')
 
     def set_list(self, node_list):
         self.ids.sensor_disp.set_list(node_list)

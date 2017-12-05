@@ -21,6 +21,8 @@ class Node(Widget):
         self.target_separation = 40
         self.attraction_const = 2
         self.repulsion_const = 2
+        self.sensor_calib_1 = 1.0
+        self.sensor_calib_2 = 1.0
         self.angular_v_const = 10
         self.linear_v_const = 3
         self.freq = freq
@@ -50,7 +52,7 @@ class Node(Widget):
         for t in targets:
             #Are we close enough to target that sensor would actually see it?
             if (t['distance'] < 60 and cnt < 10):
-                struct.pack_into('fhh', buf, struct.calcsize('fhh')*cnt, (t['distance']**(-2.191))*5428, math.degrees(t['direction']), t['bin'])
+                struct.pack_into('fhh', buf, struct.calcsize('fhh')*cnt, t['distance'], math.degrees(t['direction']), t['bin'])
                 cnt += 1
         self.field.send_update(self.node_id, CONTROLLER_ID, TARGET_LIST_UPDATE, buf)
 
@@ -144,8 +146,8 @@ class Node(Widget):
         if (ord(cmd[0]) == DUMP_COMMAND):
             payload = struct.pack(FORMATS[DUMP_COMMAND], self.node_id, self.verbose_flag,
                                   self.target_separation, self.attraction_const,
-                                  self.repulsion_const, self.angular_v_const, self.linear_v_const,
-                                  self.freq)
+                                  self.repulsion_const, self.sensor_calib_1, self.sensor_calib_2,
+                                  self.angular_v_const, self.linear_v_const, self.freq)
             self.field.send_reply(self.node_id, CONTROLLER_ID, ord(cmd[0]), payload)
         elif (ord(cmd[0]) == DRIVE_COMMAND):
             #get information back
@@ -163,6 +165,8 @@ class Node(Widget):
             self.target_separation = data_struct[DUMP_DATA_TARGET_SEPARATION]
             self.attraction_const = data_struct[DUMP_DATA_ATTRACTION_CONST]
             self.repulsion_const = data_struct[DUMP_DATA_REPULSION_CONST]
+            self.sensor_calib_1 = data_struct[DUMP_DATA_SENSOR_CALIB_1_CONST]
+            self.sensor_calib_2 = data_struct[DUMP_DATA_SENSOR_CALIB_2_CONST]
             self.angular_v_const = data_struct[DUMP_DATA_ANGULAR_VELOCITY_CONST]
             self.linear_v_const = data_struct[DUMP_DATA_LINEAR_VELOCITY_CONST]
             self.freq = data_struct[DUMP_DATA_FREQ]

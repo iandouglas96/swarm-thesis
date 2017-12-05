@@ -152,7 +152,7 @@ class NodeSensorDisplay(Widget):
         adj = np.zeros((len(self.node_list),len(self.node_list),2))
         for n in self.node_list:
             for adj_n in n.target_list:
-                dist = 5*((adj_n['magnitude']/5428)**-(1/2.191))
+                dist = 5.*(adj_n['magnitude'])
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][0] = dist*np.cos(np.radians(adj_n['direction']))
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][1] = dist*np.sin(np.radians(adj_n['direction']))
         return adj

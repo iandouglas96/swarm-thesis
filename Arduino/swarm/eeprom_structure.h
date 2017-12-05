@@ -31,7 +31,7 @@ typedef struct EEPROM_DATA {
 
 //Checksum in memory immediately after above struct
 #define EEPROM_CHECKSUM_ADDRESS sizeof(EEPROM_DATA)  //Checksum
-#define EEPROM_CHECKSUM_DEFAULT 0x12345678
+#define EEPROM_CHECKSUM_DEFAULT 0x87654321
 
 
 //Default values for EEPROM
@@ -44,8 +44,8 @@ const EEPROM_DATA EEPROM_DATA_DEFAULT = {
   1.0,              //AttractionConst
   2.0,              //RepulsionConst
 
-  5429.0,           //SensorCalib1
-  -0.456,           //SensorCalib2
+  1.0,           //SensorCalib1
+  1.0,           //SensorCalib2
   
   50,               //AngularVelocityConst
   10,               //LinearVelocityConst

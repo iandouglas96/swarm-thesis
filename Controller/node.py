@@ -182,6 +182,8 @@ class Node(Widget):
         self.target_separation = data[DUMP_DATA_TARGET_SEPARATION]
         self.attraction_const = data[DUMP_DATA_ATTRACTION_CONST]
         self.repulsion_const = data[DUMP_DATA_REPULSION_CONST]
+        self.sensor_calib_1 = data[DUMP_DATA_SENSOR_CALIB_1_CONST]
+        self.sensor_calib_2 = data[DUMP_DATA_SENSOR_CALIB_2_CONST]
         self.angular_v_const = data[DUMP_DATA_ANGULAR_VELOCITY_CONST]
         self.linear_v_const = data[DUMP_DATA_LINEAR_VELOCITY_CONST]
         self.freq = data[DUMP_DATA_FREQ]
@@ -191,9 +193,9 @@ class Node(Widget):
     def send_data(self):
         #pack all the data we want to send
         args = struct.pack(FORMATS[DUMP_COMMAND], self.node_id, self.verbose_flag,
-                            self.target_separation, self.attraction_const,
-                            self.repulsion_const, self.angular_v_const, self.linear_v_const,
-                            self.freq)
+                           self.target_separation, self.attraction_const,
+                           self.repulsion_const, self.sensor_calib_1, self.sensor_calib_2,
+                           self.angular_v_const, self.linear_v_const, self.freq)
 
         #send the command
         self.comm.send_command(self.current_id, SET_CONSTS_COMMAND, args)
@@ -325,7 +327,7 @@ class Node(Widget):
 
         print "proc"
         for n in self.target_list:
-            dist = ((n['magnitude']/5428.)**-(1/2.191))
+            dist =(n['magnitude'])
             print dist
             if (dist < self.target_separation*1.5):
                 force_mag = 0.
@@ -367,7 +369,7 @@ class Node(Widget):
         measurements = []
         landmark_pos = np.empty((0,2), float)
         for target in self.target_list:
-            dist = 5.*((target['magnitude']/5428.)**-(1/2.191))
+            dist = 5.*target['magnitude']
             relevant_node = filter(lambda node: FREQUENCIES[node['data'].freq] == target['bin'], node_list)
             if (len(relevant_node) > 0):
                 measurements.extend([dist, -np.radians(target['direction'])])

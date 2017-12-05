@@ -15,6 +15,8 @@ void setupEepromDriver() {
     Checksum = EEPROM_CHECKSUM_DEFAULT;
     EEPROM.put(EEPROM_CHECKSUM_ADDRESS, Checksum);
   }
+
+  ConstData.Verbose = false;
 }
 
 void saveEepromData() {
