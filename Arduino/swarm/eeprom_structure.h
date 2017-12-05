@@ -31,13 +31,14 @@ typedef struct EEPROM_DATA {
 
 //Checksum in memory immediately after above struct
 #define EEPROM_CHECKSUM_ADDRESS sizeof(EEPROM_DATA)  //Checksum
-#define EEPROM_CHECKSUM_DEFAULT 0x11223344
+#define EEPROM_CHECKSUM_DEFAULT 0x12345678
+
 
 //Default values for EEPROM
 const EEPROM_DATA EEPROM_DATA_DEFAULT = {
   254,              //NodeID
   
-  true,             //Verbose
+  false,             //Verbose
   
   25,               //TargetSeparation
   1.0,              //AttractionConst
