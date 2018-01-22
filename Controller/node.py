@@ -21,15 +21,15 @@ LEFT = 3
 
 def move(x, u, dt, l):
     #calculate R to ICC
-    Vl = u[0];
-    Vr = u[1];
+    Vl = 0.25*u[0];
+    Vr = 0.25*u[1];
 
     #special case for straight motion
     if (Vl == Vr):
-        Vl += 0.1
+        return np.array([x[0]+Vl*dt*np.cos(x[2]), x[1]+Vl*dt*np.sin(x[2]), x[2]])
     
-    R = (l/4)*(Vl+Vr)/(Vr-Vl)
-    omega = (Vr-Vl)/l
+    R = (l/4)*(Vl+Vr)/(Vl-Vr)
+    omega = (Vl-Vr)/l
     
     #calculate ICC position
     ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
@@ -42,7 +42,7 @@ def move(x, u, dt, l):
     return fxu + np.array([ICC[0], ICC[1], omega*dt])
         
 def fx(x, dt, u):
-    return move(x, u, dt, 50.)
+    return move(x, u, dt, 55.)
 
 def normalize_angle(x):
     x = x % (2 * np.pi)    # force in range [0, 2 pi)
@@ -99,65 +99,8 @@ def z_mean(sigmas, Wm):
         x[z+1] = np.arctan2(sum_sin, sum_cos)
     return x
 
-#Calculate the system propagation matrix
-def calc_system_mat(x_x, x_y, theta, l, Vl, Vr, time):
-    #calculate R to ICC
-    R = (l/4)*(Vl+Vr)/(Vr-Vl)
-    omega = (Vr-Vl)/l
-    
-    #calculate ICC position
-    ICC = Matrix([[x_x-R*sympy.sin(theta), x_y+R*sympy.cos(theta)]])
-
-    #calculate the measurement matrix
-    rotation = Matrix([[sympy.cos(omega*time), -sympy.sin(omega*time), 0],
-                       [sympy.sin(omega*time), sympy.cos(omega*time), 0],
-                       [0, 0, 1]])
-    fxu = rotation * Matrix([[x_x-ICC[0]], [x_y-ICC[1]], [theta]])
-    fxu = fxu + Matrix([ICC[0], ICC[1], omega*time])
-    
-    #The jacobian of the system propagation matrix is F
-    F = fxu.jacobian(Matrix([x_x, x_y, theta]))
-    #V we can use to convert our noise from control space
-    V = fxu.jacobian(Matrix([Vl, Vr]))
-    return fxu, F, V
-    
-def calc_measurement_mat(x_x, x_y, theta, px, py):
-    #measurement matrix
-    z = Matrix([[sympy.sqrt(((px-x_x)**2) + ((py-x_y)**2))],
-                [sympy.atan2(py-x_y, px-x_x) - theta]])
-                
-    #find H matrix (jacobian of z wrt x,y,theta)
-    H = z.jacobian(Matrix([x_x, x_y, theta]))
-    #find H_p (jacobian of z wrt px, py)
-    H_p = z.jacobian(Matrix([px, py])) 
-    
-    return z, H, H_p
-
 #A Class for keeping track of robot data
 class Node(Widget):
-    #define our variables
-    time = symbols('t')
-    Vl, Vr = symbols('V_l, V_r')
-    px, py = symbols('px, py')
-    x_x, x_y, l, theta = symbols('x_x, x_y, l, theta')
-    
-    #get the various matrices
-    fxu, F, V = calc_system_mat(x_x, x_y, theta, l, Vl, Vr, time)
-    z, H, H_p = calc_measurement_mat(x_x, x_y, theta, px, py)
-
-    #lambdify our matrices for numerical evaluation
-    f_n = staticmethod(sympy.lambdify((x_x, x_y, theta, l, Vl, Vr, time),
-                       fxu, modules='numpy'))
-    F_n = staticmethod(sympy.lambdify((x_x, x_y, theta, l, Vl, Vr, time),
-                       F, modules='numpy'))
-    V_n = staticmethod(sympy.lambdify((x_x, x_y, theta, l, Vl, Vr, time),
-                       V, modules='numpy'))
-    z_n = staticmethod(sympy.lambdify((x_x, x_y, theta, px, py),
-                       z, modules='numpy'))
-    H_n = staticmethod(sympy.lambdify((x_x, x_y, theta, px, py),
-                       H, modules='numpy'))
-    H_p_n = staticmethod(sympy.lambdify((x_x, x_y, theta, px, py),
-                       H_p, modules='numpy'))
     
     #link node_id to the .kv file by making it a kivy property
     node_id = NumericProperty(0)
@@ -272,8 +215,8 @@ class Node(Widget):
     def command_motion(self):
         #only send command if something changed, so we don't spam the comm system
         if (self.old_matrix != self.key_matrix):
-            r_speed = 100*(self.key_matrix[UP]-self.key_matrix[DOWN])-50*(self.key_matrix[LEFT]-self.key_matrix[RIGHT])
-            l_speed = 100*(self.key_matrix[UP]-self.key_matrix[DOWN])-50*(self.key_matrix[RIGHT]-self.key_matrix[LEFT])
+            r_speed = 100*(self.key_matrix[UP]-self.key_matrix[DOWN])+50*(self.key_matrix[LEFT]-self.key_matrix[RIGHT])
+            l_speed = 100*(self.key_matrix[UP]-self.key_matrix[DOWN])+50*(self.key_matrix[RIGHT]-self.key_matrix[LEFT])
             
             self.control[0] = r_speed
             self.control[1] = l_speed
@@ -302,7 +245,7 @@ class Node(Widget):
         self.ukf.x = np.array([self.pos[0],self.pos[1],np.radians(self.angle)])
         self.ukf.P = np.diag([1, 1, 0.1])
         #sensor noise
-        self.ukf.R = np.array([0.1**2, 
+        self.ukf.R = np.array([20**2, 
                          0.05**2])
         #process noise                 
         self.ukf.Q = np.diag([0.01, 0.01, 0.01])
@@ -358,7 +301,7 @@ class Node(Widget):
                 force_angle += np.pi;
                 force_mag *= -1;
 
-            angular_v = (self.angular_v_const * force_angle);
+            angular_v = -(self.angular_v_const * force_angle);
             linear_v = (self.linear_v_const * force_mag * np.cos(force_angle));
             return angular_v, linear_v
         else:
@@ -389,7 +332,7 @@ class Node(Widget):
                               'direction':data[b*3+TARGET_LIST_UPDATE_DIRECTION],
                               'bin':data[b*3+TARGET_LIST_UPDATE_BIN]}
                     self.target_list.append(target)
-            #print self.target_list
+            print self.target_list
             
             #If we are off of manual, motion is determined by neighbors
             if (not self.manual):

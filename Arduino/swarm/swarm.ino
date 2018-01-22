@@ -25,6 +25,7 @@ void setup() {
   ManualMode = true;
 
   setupEepromDriver();
+  randomSeed(ConstData.NodeID);
   setupDetector();
   setupLedDriver();
   setupWireless();

@@ -124,8 +124,13 @@ class NodeSensorDisplay(Widget):
                 for i in range(0, len(self.node_list)):
                     if (len(self.node_list[i].target_list) == 0):
                         all_reports_heard = False
-                    self.node_list[i].pos = [int(self.pts[i][0]), int(self.pts[i][1])]
-                    self.node_list[i].angle = int(np.degrees(self.pts[i][2]))
+                    
+                    print self.pts[i]
+                    
+                    for n in self.node_list:
+                        if (FREQUENCIES[n.freq] == i):
+                            n.pos = [int(self.pts[i][0]), int(self.pts[i][1])]
+                            n.angle = int(np.degrees(self.pts[i][2]))
                     
                 #If all robots have adjancencies, we are fully initialized
                 self.has_init = all_reports_heard
@@ -138,7 +143,6 @@ class NodeSensorDisplay(Widget):
                     self.timer.cancel()
                     self.timer = Clock.schedule_interval(self.update, 1./60)
                     
-
                 self.last_pts = np.copy(self.pts)
         else:
             #print "Ready for EKF"

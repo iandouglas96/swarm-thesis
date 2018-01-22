@@ -21,8 +21,8 @@ AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 #define SERVO_SCALE_FACTOR 0.95
 
 //Define the location of bins on the FFT
-#define NUM_FREQ_BINS 2
-const int FREQ_BINS[NUM_FREQ_BINS] = {23, 28};
+#define NUM_FREQ_BINS 3
+const int FREQ_BINS[NUM_FREQ_BINS] = {23, 28, 33};
 
 float RawData[(360/SERVO_SPEED)+1][NUM_FREQ_BINS];
 
@@ -65,7 +65,18 @@ TARGET * targetScan() {
   // Have we completed scanning a bin?
   if (fft[0].available() && fft[1].available()) {   
     //For debugging
-    //Serial.println(fft[0].read(22,24));
+    /*Serial.print("FFT: ");
+    float n;
+    for (int i=0; i<40; i++) {
+      n = fft[0].read(i);
+      if (n >= 0.01) {
+        Serial.print(n);
+        Serial.print(" ");
+      } else {
+        Serial.print("  -  "); // don't print "0.00"
+      }
+    }
+    Serial.println();*/
 
     //Store data
     for (int i=0; i<NUM_FREQ_BINS; i++) {
@@ -161,6 +172,9 @@ void parseScan() {
 //Convert FFT magnitude values to distances.
 double magToCm(float magnitude) {
   //empirically determined calibration curve
-  return pow(magnitude/ConstData.SensorCalib1, ConstData.SensorCalib2);
+  if (magnitude > 0) {
+    return pow(magnitude/ConstData.SensorCalib1, ConstData.SensorCalib2);
+  }
+  return 0;
 }
 

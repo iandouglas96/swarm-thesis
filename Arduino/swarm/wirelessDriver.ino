@@ -162,7 +162,7 @@ void sendResponse(int targetId, char cmd, void * payload, int payloadLength, boo
       //send the packet
       rfm.sendAddressedVariable(targetId, fullPayload, payloadLength+3);
       //give some time for a response
-      delay(300);
+      delay(100+random(500));
     } while (!checkForAck(targetId));
   } else {
     //Nothing fancy, just send and then chillax

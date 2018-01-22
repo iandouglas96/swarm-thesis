@@ -96,13 +96,13 @@ def run_localization(
               z_mean_fn=z_mean, residual_x=residual_x, 
               residual_z=residual_h)
 
-    ukf.x = np.array([2, 6, .3])
+    ukf.x = np.array([0, 0, 0])
     ukf.P = np.diag([.1, .1, .05])
     ukf.R = np.array([sigma_range**2, 
                      sigma_bearing**2])
     ukf.Q = np.eye(3)*0.0001
     
-    sim_pos = np.array([2, 6, .3])
+    sim_pos = np.array([0, 0, 0.5])
     
     # plot landmarks
     if len(landmarks) > 0:
@@ -149,8 +149,8 @@ def run_localization(
 
 dt = 1.0
 wheelbase = 0.5    
-landmarks = np.array([[5, 10], [10, 5], [15, 15], [7,7]])
-cmds = [np.array([1, 1.1])] * 200
+landmarks = np.array([[5,5], [5,0], [10, 5]])
+cmds = [np.array([-1, -0.7])] * 200
 ukf = run_localization(
     cmds, landmarks, sigma_vel=0.1, sigma_steer=np.radians(1),
     sigma_range=1, sigma_bearing=0.1)

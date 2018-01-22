@@ -67,7 +67,7 @@ class Robot():
         self.dt = dt
         
         self.P = np.diag([0.1, 0.1, 0])
-        self.x = np.array([[0],[0],[0.5]])
+        self.x = np.array([[0],[0],[0]])
         self.x_act = np.array([[0],[0],[0]])
         
         #covariance models
@@ -124,7 +124,7 @@ class Robot():
 def run(r):
     landmarks = np.array([[5,5], [5,0], [10, 5]])
     landmark_cov = np.diag([0.1, 0.1])
-    control_ideal = np.array([-1,-0.2])
+    control_ideal = np.array([1,1.1])
     
     #plot landmark covariances
     for l in landmarks:
@@ -133,7 +133,7 @@ def run(r):
                      std=6, facecolor='k', alpha=0.3)
     
     track = []
-    for i in range(100):
+    for i in range(200):
         print i
         control = control_ideal# * [np.random.normal(1, 0.1),np.random.normal(1, 0.1)]
         r.predict(control, control_ideal)

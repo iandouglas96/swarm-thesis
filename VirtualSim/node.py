@@ -95,7 +95,7 @@ class Node(Widget):
                 force_angle += math.pi;
                 force_mag *= -1;
 
-            self.angular_v = (self.angular_v_const * force_angle);
+            self.angular_v = -(self.angular_v_const * force_angle);
             self.linear_v = (self.linear_v_const * force_mag * math.cos(force_angle));
             
             print self.angular_v, self.linear_v
@@ -109,28 +109,31 @@ class Node(Widget):
         #   self.linear_v = math.copysign(50, self.linear_v)
         
         #wheelbase width
-        l = 50.   
+        l = 55.   
 
-        Vl = float(self.linear_v + self.angular_v)
-        Vr = float(self.linear_v - self.angular_v)
+        Vl = 0.25*float(self.linear_v + self.angular_v)
+        Vr = 0.25*float(self.linear_v - self.angular_v)
         
         if (Vl == Vr):
-            Vl += 0.00001
-        #calculate R to ICC
-        R = (l/4)*(Vl+Vr)/(Vr-Vl)
-        omega = (Vr-Vl)/l
-        
-        #calculate ICC position
-        ICC = np.array([self.fxu[0][0]-(R*np.sin(self.fxu[2][0])), self.fxu[1][0]+(R*np.cos(self.fxu[2][0]))])
+            #the world is simpler for straight motion
+            self.fxu = np.array([[self.fxu[0][0]+Vl*dt*np.cos(self.fxu[2][0])], 
+                            [self.fxu[1][0]+Vl*dt*np.sin(self.fxu[2][0])], [self.fxu[2][0]]])
+        else:
+            #calculate R to ICC
+            R = (l/4)*(Vl+Vr)/(Vl-Vr)
+            omega = (Vl-Vr)/l
+            
+            #calculate ICC position
+            ICC = np.array([self.fxu[0][0]-(R*np.sin(self.fxu[2][0])), self.fxu[1][0]+(R*np.cos(self.fxu[2][0]))])
 
-        #calculate the measurement matrix
-        rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
-                             [np.sin(omega*dt), np.cos(omega*dt), 0],
-                             [0, 0, 1]])
-                           
-        self.fxu = rotation.dot(np.array([[self.fxu[0][0]-ICC[0]], [self.fxu[1][0]-ICC[1]], [self.fxu[2][0]]]))
+            #calculate the measurement matrix
+            rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
+                                 [np.sin(omega*dt), np.cos(omega*dt), 0],
+                                 [0, 0, 1]])
+                               
+            self.fxu = rotation.dot(np.array([[self.fxu[0][0]-ICC[0]], [self.fxu[1][0]-ICC[1]], [self.fxu[2][0]]]))
 
-        self.fxu = self.fxu + np.array([[ICC[0]], [ICC[1]], [omega*dt]])
+            self.fxu = self.fxu + np.array([[ICC[0]], [ICC[1]], [omega*dt]])
         
         self.pos[0] = int(self.fxu[0][0])
         self.pos[1] = int(self.fxu[1][0])

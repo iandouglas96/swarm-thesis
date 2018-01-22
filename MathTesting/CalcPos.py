@@ -44,7 +44,7 @@ def scan_for_neighbors(node, node_list):
             # add error
             dist += np.random.normal(0, 10)
             angle += np.random.normal(0, 0.1)
-            if (dist < 200):
+            if (dist < 100):
                 list.append({'distance': dist, 'direction': angle, 'bin': n.id_num})
 
     return list
@@ -121,7 +121,7 @@ def sum_errors(p, *args):
     D[:,:,1] = np.multiply(px_outer, sin_mat[:, np.newaxis])
     D[:,:,1] += np.multiply(py_outer, cos_mat[:, np.newaxis])
 
-    print D
+    #print D
     
     #remove data that we don't have sensor data for
     D = np.multiply(D, args[0].any(axis = 2)[:, :, np.newaxis])
@@ -144,7 +144,7 @@ csvwriter.writerow(['num', 'err_solve', 'error_abs', 'time'])
 
 for i in range(0, 1):
     # generate random config
-    num = 10
+    num = 20
 
     print "iter "+str(i) + ": "+ str(num)+" nodes"
 
