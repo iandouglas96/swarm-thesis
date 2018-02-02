@@ -8,6 +8,17 @@ import glob
 aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
 board = cv2.aruco.CharucoBoard_create(5, 7, 0.04, 0.02, aruco_dict);
 
+# Code to export the board to a file for printing before calibrating
+'''
+img = board.draw((1000,1400))
+#img = aruco.drawMarker(aruco_dict, 2, 700)
+cv2.imwrite("test_marker.jpg", img)
+
+cv2.imshow('frame',img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+'''
+
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
