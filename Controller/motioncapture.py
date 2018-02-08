@@ -13,6 +13,9 @@ import cv2
 class MotionCapture(Image, NodeSensorDisplay):
     def __init__(self, **kwargs):
         super(MotionCapture, self).__init__(**kwargs)
+        #load calibration constants for camera
+        self.camera_calib_mtx = np.load('camera_calib_mtx.npy')
+        self.camera_calib_dist = np.load('camera_calib_dist.npy')
         #grab a hook to the webcam
         self.capture = cv2.VideoCapture(0)
         
@@ -32,6 +35,12 @@ class MotionCapture(Image, NodeSensorDisplay):
         #draw video feed (like a boss)
         ret, frame = self.capture.read()
         if ret:
+            for n in self.node_list:
+                #draw theoretical robot locations on the screen
+                frame = cv2.aruco.drawAxis(frame, self.camera_calib_mtx, self.camera_calib_dist,
+                                           np.array([0,0,np.radians(n.angle)], np.float32), 
+                                           np.array([n.pos[0],n.pos[1],2000], np.float32), 100)
+            
             # convert OpenCV image to Kivy texture
             buf1 = cv2.flip(frame, 0)
             buf = buf1.tostring()
