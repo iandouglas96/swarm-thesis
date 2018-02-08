@@ -1,7 +1,7 @@
 #set our main window size
 #have to do this first
 from kivy.config import Config
-Config.set('graphics', 'width', '1100')
+Config.set('graphics', 'width', '1200')
 Config.set('graphics', 'height', '500')
 
 from constants import *
@@ -23,7 +23,7 @@ class Controller(BoxLayout):
     def __init__(self, **kwargs):
         super(Controller, self).__init__(**kwargs)
         #self.comm = SerialInterface('/dev/tty.usbmodem1782091')
-        self.comm = SerialInterface('/dev/ttys003')
+        self.comm = SerialInterface('/dev/ttys002')
 
     def set_list(self, node_list):
         self.ids.motion_capture.set_list(node_list)
