@@ -13,8 +13,11 @@ aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 parameters =  aruco.DetectorParameters_create()
 
 #generate 2-aruco pattern
-board = cv2.aruco.Board_create([np.array([[0.025, 0.05 ,0.],[0.125, 0.05, 0. ],[0.125, -0.05, 0.],[0.025, -0.05, 0.]], dtype=np.float32),
-                                np.array([[-0.125, 0.05 ,0.],[-0.025, 0.05, 0. ],[-0.025, -0.05, 0.],[-0.125, -0.05, 0.]], dtype=np.float32)], 
+#dimensions in cm
+m_width = 71
+m_sep = 35.5
+board = cv2.aruco.Board_create([np.array([[m_sep/2, m_width/2 ,0.],[m_sep/2+m_width, m_width/2, 0. ],[m_sep/2+m_width, -m_width/2, 0.],[m_sep/2, -m_width/2, 0.]], dtype=np.float32),
+                                np.array([[-(m_sep/2+m_width), m_width/2 ,0.],[-m_sep/2, m_width/2, 0. ],[-m_sep/2, -m_width/2, 0.],[-(m_sep/2+m_width), -m_width/2, 0.]], dtype=np.float32)], 
                                 aruco_dict, np.array([0,1]))
 
 #constant keeping track of screenshots taken
@@ -44,7 +47,7 @@ while(True):
             z_angle = np.arctan2(axis[2]*s - axis[1]*axis[0]*t, 1-(axis[2]**2 + axis[0]**2)*t)
             print tvec
             #draw axes
-            frame = aruco.drawAxis(frame, camera_calib_mtx, camera_calib_dist, np.array([0,0,z_angle], np.float32), tvec, 0.1)
+            frame = aruco.drawAxis(frame, camera_calib_mtx, camera_calib_dist, np.array([0,0,z_angle], np.float32), tvec, 100)
     except TypeError:
         print "no markers detected"
     

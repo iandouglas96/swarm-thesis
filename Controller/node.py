@@ -261,7 +261,7 @@ class Node(Widget):
         self.angle = int(np.degrees(self.ukf.x[2]))
         
     def ukf_update(self, z, l_pos):
-         self.ukf.update(z, hx_args=l_pos,)
+        self.ukf.update(z, hx_args=l_pos,)
 
     def process_targets(self):
         #figure out force vector
