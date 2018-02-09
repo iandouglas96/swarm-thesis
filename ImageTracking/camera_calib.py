@@ -6,7 +6,7 @@ import cv2
 import glob
 
 aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
-board = cv2.aruco.CharucoBoard_create(5, 7, 33, 16.5, aruco_dict);
+board = cv2.aruco.CharucoBoard_create(5, 7, 3.3, 1.65, aruco_dict);
 
 # Code to export the board to a file for printing before calibrating
 '''
