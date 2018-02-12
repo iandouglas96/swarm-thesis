@@ -26,7 +26,7 @@ class Controller(BoxLayout):
         #self.comm = SerialInterface('/dev/ttys002')
 
     def set_list(self, node_list):
-        self.ids.motion_capture.set_list(node_list)
+        self.ids.sensor_disp.set_list(node_list)
 
     #Pass data to panel to be populatedd
     def new_selection(self, node):
