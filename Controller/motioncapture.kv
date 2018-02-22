@@ -6,3 +6,10 @@
     Rectangle:
       size: self.size
       pos: self.pos
+  Button:
+    id: toggle_logging_button
+    height: '40dp'
+    size_hint_y: None
+    size_hint_x: None
+    text: 'Log'
+    on_release: root.toggle_logging()

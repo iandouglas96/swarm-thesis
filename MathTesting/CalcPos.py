@@ -142,6 +142,7 @@ csvfile = open(name="data.csv", mode='wb')
 csvwriter = csv.writer(csvfile, delimiter=' ', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 csvwriter.writerow(['num', 'err_solve', 'error_abs', 'time'])
 
+random.seed(1)
 for i in range(0, 1):
     # generate random config
     num = 20

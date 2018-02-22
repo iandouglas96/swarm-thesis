@@ -5,6 +5,7 @@ from kivy.graphics.texture import Texture
 from constants import *
 from nodesensordisplay import NodeSensorDisplay
 
+import csv
 import math
 import numpy as np
 
@@ -19,6 +20,7 @@ m_sep = 3.55
 class MotionCapture(Image, NodeSensorDisplay):
     def __init__(self, **kwargs):
         super(MotionCapture, self).__init__(**kwargs)
+        self.logging = False
         #load calibration constants for camera
         self.camera_calib_mtx = np.load('camera_calib_mtx.npy')
         self.camera_calib_dist = np.load('camera_calib_dist.npy')
@@ -33,6 +35,21 @@ class MotionCapture(Image, NodeSensorDisplay):
                                 self.aruco_dict, np.array([i*2,i*2+1])))
         #grab a hook to the webcam
         self.capture = cv2.VideoCapture(0)
+    
+    def toggle_logging(self):
+        if (self.logging):
+            #close up file
+            self.log_file.close()
+            #Update button name and flip the boolean
+            self.ids.toggle_logging_button.text = "Log"
+            self.logging = False
+        else:
+            #Open file and csv writer
+            self.log_file = open('data.csv',"wb")
+            self.csv_writer = csv.writer(self.log_file)
+            #Update button name and flip the boolean
+            self.ids.toggle_logging_button.text = "Stop"
+            self.logging = True
         
     #override nodesensordisplay version
     #don't add widget, so we don't actually render nodes
@@ -55,7 +72,11 @@ class MotionCapture(Image, NodeSensorDisplay):
         #detect the corners and ids of all the aruco markers
         corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(frame, self.aruco_dict, parameters=self.parameters)
         
-        robot_positions = np.zeros([ids.max()/2+1, 3])
+        if ids is not None:
+            robot_positions = np.zeros([ids.max()/2+1, 3])
+        else:
+            return np.zeros([0, 3])
+            
         for board in self.aruco_boards:
             #if we detected some stuff
             success = False
@@ -97,8 +118,14 @@ class MotionCapture(Image, NodeSensorDisplay):
                 calculated_pos[n.node_id-2] = [n.pos[0]/5., n.pos[1]/5., -np.radians(n.angle)]
             
             if (len(calculated_pos) == len(measured_pos)): 
+                #fit points onto eachother
                 err = self.normalize_pts(calculated_pos, measured_pos)
-            
+                if (self.logging):
+                    #find difference b/w known and calculated states
+                    difference = calculated_pos-measured_pos
+                    #log difference data to csv (like a boss)
+                    self.csv_writer.writerow(difference.flatten())
+                
             #actually draw stuff
             for p in calculated_pos:
                 self.draw_robot(p, (255,0,0), frame)

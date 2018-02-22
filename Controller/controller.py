@@ -28,7 +28,7 @@ class Controller(BoxLayout):
     def set_list(self, node_list):
         self.ids.sensor_disp.set_list(node_list)
 
-    #Pass data to panel to be populatedd
+    #Pass data to panel to be populated
     def new_selection(self, node):
         self.set_visible_node(True)
         self.ids.data_panel.disp_node(node)

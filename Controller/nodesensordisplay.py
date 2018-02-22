@@ -17,7 +17,7 @@ class NodeSensorDisplay(Widget):
     # process points to fit pts1 onto pts2
     # uses algorithm described here: http://nghiaho.com/?page_id=671
     def normalize_pts(self, pts1, pts2):
-        print pts1
+        #print pts1
         A = pts1[:, 0:2]
         B = pts2[:, 0:2]
 
@@ -41,7 +41,7 @@ class NodeSensorDisplay(Widget):
 
         # special reflection case
         if np.linalg.det(R) > 0:
-            print "Reflection detected"
+            #print "Reflection detected"
             Vt[1, :] *= -1
             R = np.dot(Vt.T, U.T)
 
@@ -153,7 +153,7 @@ class NodeSensorDisplay(Widget):
     #generate adjacency list, assuming all frequencies are unique
     def gen_adjacencies(self):
         #create a new array to hold the data
-        print len(self.node_list)
+        #print len(self.node_list)
         adj = np.zeros((len(self.node_list),len(self.node_list),2))
         for n in self.node_list:
             for adj_n in n.target_list:

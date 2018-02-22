@@ -268,10 +268,10 @@ class Node(Widget):
         force_fwd = 0
         force_side = 0
 
-        print "proc"
+        #print "proc"
         for n in self.target_list:
             dist =(n['magnitude'])
-            print dist
+            #print dist
             if (dist < self.target_separation*1.5):
                 force_mag = 0.
                 if (dist > self.target_separation):
@@ -332,7 +332,7 @@ class Node(Widget):
                               'direction':data[b*3+TARGET_LIST_UPDATE_DIRECTION],
                               'bin':data[b*3+TARGET_LIST_UPDATE_BIN]}
                     self.target_list.append(target)
-            print self.target_list
+            #print self.target_list
             
             #If we are off of manual, motion is determined by neighbors
             if (not self.manual):
