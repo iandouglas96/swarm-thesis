@@ -111,8 +111,8 @@ class Node(Widget):
         #wheelbase width
         l = 55.   
 
-        Vl = 0.25*float(self.linear_v + self.angular_v)
-        Vr = 0.25*float(self.linear_v - self.angular_v)
+        Vl = 0.2*float(self.linear_v + self.angular_v)
+        Vr = 0.2*float(self.linear_v - self.angular_v)
         
         if (Vl == Vr):
             #the world is simpler for straight motion

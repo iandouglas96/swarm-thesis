@@ -42,8 +42,8 @@ def scan_for_neighbors(node, node_list):
             dist = math.sqrt((n.pos[0]-node.pos[0])**2+(n.pos[1]-node.pos[1])**2)
             angle = -(math.atan2(n.pos[1]-node.pos[1], n.pos[0]-node.pos[0])-math.radians(node.angle))
             # add error
-            dist += np.random.normal(0, 10)
-            angle += np.random.normal(0, 0.1)
+            #dist += np.random.normal(0, 10)
+            #angle += np.random.normal(0, 0.1)
             if (dist < 100):
                 list.append({'distance': dist, 'direction': angle, 'bin': n.id_num})
 

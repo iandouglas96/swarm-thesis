@@ -20,9 +20,9 @@ DOWN = 2
 LEFT = 3
 
 def move(x, u, dt, l):
-    #calculate R to ICC
-    Vl = 0.25*u[0];
-    Vr = 0.25*u[1];
+    #scale appropriately to screen
+    Vl = 0.2*u[0];
+    Vr = 0.2*u[1];
 
     #special case for straight motion
     if (Vl == Vr):
@@ -254,6 +254,15 @@ class Node(Widget):
         self.ukf_predict(0.0001)
         
     def ukf_predict(self, dt):
+        #try:
+        #    self.state = fx(self.state, dt, self.control)
+        #except AttributeError:
+        #    self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
+        
+        #self.pos[0] = int(self.state[0])
+        #self.pos[1] = int(self.state[1])
+        #self.angle = int(np.degrees(self.state[2]))
+        
         self.ukf.predict(fx_args=self.control, dt=dt)
         
         self.pos[0] = int(self.ukf.x[0])
@@ -303,6 +312,9 @@ class Node(Widget):
 
             angular_v = -(self.angular_v_const * force_angle);
             linear_v = (self.linear_v_const * force_mag * np.cos(force_angle));
+            
+            linear_v = np.clip(linear_v, -400, 400)
+            angular_v = np.clip(angular_v, -300, 300)
             return angular_v, linear_v
         else:
             return 0, 0
