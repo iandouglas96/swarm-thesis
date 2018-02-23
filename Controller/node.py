@@ -254,15 +254,6 @@ class Node(Widget):
         self.ukf_predict(0.0001)
         
     def ukf_predict(self, dt):
-        #try:
-        #    self.state = fx(self.state, dt, self.control)
-        #except AttributeError:
-        #    self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
-        
-        #self.pos[0] = int(self.state[0])
-        #self.pos[1] = int(self.state[1])
-        #self.angle = int(np.degrees(self.state[2]))
-        
         self.ukf.predict(fx_args=self.control, dt=dt)
         
         self.pos[0] = int(self.ukf.x[0])
