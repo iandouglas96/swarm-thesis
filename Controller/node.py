@@ -20,9 +20,21 @@ DOWN = 2
 LEFT = 3
 
 def move(x, u, dt, l):
+    #simulate rounding error created by speed timing algorithm
+    if (u[0] != 0):
+        Vl = 1024//int(u[0])
+        Vl = 1024.0/Vl
+    else:
+        Vl = 0
+    if (u[1] != 0):    
+        Vr = 1024//int(u[1])
+        Vr = 1024.0/Vr
+    else:
+        Vr = 0
+    
     #scale appropriately to screen
-    Vl = 0.2*u[0];
-    Vr = 0.2*u[1];
+    Vl = 0.2*Vl
+    Vr = 0.2*Vr
 
     #special case for straight motion
     if (Vl == Vr):
@@ -230,7 +242,7 @@ class Node(Widget):
             #slice so we copy values instead of ref
             self.old_matrix = self.key_matrix[:]
             
-    #Functions relating to EKF filtering of robot position
+    #Functions relating to UKF filtering of robot position
     def ukf_init(self):
         print "ukf init"
         points = MerweScaledSigmaPoints(n=3, alpha=.00001, beta=2, kappa=0, 
@@ -243,9 +255,9 @@ class Node(Widget):
         
         #covariance and state matrices
         self.ukf.x = np.array([self.pos[0],self.pos[1],np.radians(self.angle)])
-        self.ukf.P = np.diag([1, 1, 0.1])
+        self.ukf.P = np.diag([5, 5, 0.1])
         #sensor noise
-        self.ukf.R = np.array([20**2, 
+        self.ukf.R = np.array([10**2, 
                          0.05**2])
         #process noise                 
         self.ukf.Q = np.diag([0.01, 0.01, 0.01])
@@ -254,6 +266,15 @@ class Node(Widget):
         self.ukf_predict(0.0001)
         
     def ukf_predict(self, dt):
+        #try:
+        #    self.state = fx(self.state, dt, self.control)
+        #except AttributeError:
+        #    self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
+            
+        #self.pos[0] = int(self.state[0])
+        #self.pos[1] = int(self.state[1])
+        #self.angle = int(np.degrees(self.state[2]))
+        
         self.ukf.predict(fx_args=self.control, dt=dt)
         
         self.pos[0] = int(self.ukf.x[0])
@@ -265,8 +286,8 @@ class Node(Widget):
 
     def process_targets(self):
         #figure out force vector
-        force_fwd = 0
-        force_side = 0
+        force_fwd = 0.0
+        force_side = 0.0
 
         #print "proc"
         for n in self.target_list:
@@ -301,8 +322,8 @@ class Node(Widget):
                 force_angle += np.pi;
                 force_mag *= -1;
 
-            angular_v = -(self.angular_v_const * force_angle);
-            linear_v = (self.linear_v_const * force_mag * np.cos(force_angle));
+            angular_v = int(-(self.angular_v_const * force_angle));
+            linear_v = int(self.linear_v_const * force_mag * np.cos(force_angle));
             
             linear_v = np.clip(linear_v, -400, 400)
             angular_v = np.clip(angular_v, -300, 300)

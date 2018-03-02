@@ -56,7 +56,7 @@ AR Path="/5941B2B4/5941D635" Ref="U3"  Part="1"
 AR Path="/5941F948/5941D635" Ref="U3"  Part="4" 
 F 0 "U3" H 4150 3850 50  0000 C CNN
 F 1 "MCP6004" H 4250 3450 50  0000 C CNN
-F 2 "Housings_DIP:DIP-14_W7.62mm" H 4050 3750 50  0001 C CNN
+F 2 "custom_footprints:DIP-14_W7.62mm_Socket" H 4050 3750 50  0001 C CNN
 F 3 "" H 4150 3850 50  0000 C CNN
 	1    4100 3650
 	1    0    0    -1  
@@ -69,7 +69,7 @@ AR Path="/5941B2B4/5941D63C" Ref="U3"  Part="2"
 AR Path="/5941F948/5941D63C" Ref="U4"  Part="1" 
 F 0 "U3" H 5450 3750 50  0000 C CNN
 F 1 "MCP6004" H 5550 3350 50  0000 C CNN
-F 2 "Housings_DIP:DIP-14_W7.62mm" H 5350 3650 50  0001 C CNN
+F 2 "custom_footprints:DIP-14_W7.62mm_Socket" H 5350 3650 50  0001 C CNN
 F 3 "" H 5450 3750 50  0000 C CNN
 	2    5400 3550
 	1    0    0    -1  
@@ -82,7 +82,7 @@ AR Path="/5941B2B4/5941D643" Ref="U3"  Part="3"
 AR Path="/5941F948/5941D643" Ref="U4"  Part="2" 
 F 0 "U3" H 6750 3650 50  0000 C CNN
 F 1 "MCP6004" H 6850 3250 50  0000 C CNN
-F 2 "Housings_DIP:DIP-14_W7.62mm" H 6650 3550 50  0001 C CNN
+F 2 "custom_footprints:DIP-14_W7.62mm_Socket" H 6650 3550 50  0001 C CNN
 F 3 "" H 6750 3650 50  0000 C CNN
 	3    6700 3450
 	1    0    0    -1  
@@ -333,14 +333,6 @@ Wire Wire Line
 	4950 2300 5100 2300
 Wire Wire Line
 	4500 2300 4650 2300
-Text Label 6350 2300 0    60   ~ 0
-ref_filter
-Text Label 3700 3550 2    60   ~ 0
-ref_filter
-Text Label 5000 3450 2    60   ~ 0
-ref_filter
-Text Label 6300 3350 2    60   ~ 0
-ref_filter
 $Comp
 L C C5
 U 1 1 5972722E
@@ -390,4 +382,12 @@ Text Label 5300 3250 2    60   ~ 0
 3v3f
 Text Label 6600 3150 2    60   ~ 0
 3v3f
+Text Label 6350 2300 0    60   ~ 0
+ref_filter
+Text Label 3700 3550 2    60   ~ 0
+ref_filter
+Text Label 5000 3450 2    60   ~ 0
+ref_filter
+Text Label 6300 3350 2    60   ~ 0
+ref_filter
 $EndSCHEMATC
