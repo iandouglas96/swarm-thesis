@@ -22,15 +22,17 @@ LEFT = 3
 def move(x, u, dt, l):
     #simulate rounding error created by speed timing algorithm
     if (u[0] != 0):
-        Vl = 1024//int(u[0])
+        Vl = 1024//abs(int(u[0]))*np.sign(u[0])
         Vl = 1024.0/Vl
     else:
         Vl = 0
     if (u[1] != 0):    
-        Vr = 1024//int(u[1])
+        Vr = 1024//abs(int(u[1]))*np.sign(u[0])
         Vr = 1024.0/Vr
     else:
         Vr = 0
+        
+    print str(Vl) + "  " + str(Vr)
     
     #scale appropriately to screen
     Vl = 0.2*Vl
@@ -266,14 +268,14 @@ class Node(Widget):
         self.ukf_predict(0.0001)
         
     def ukf_predict(self, dt):
-        #try:
-        #    self.state = fx(self.state, dt, self.control)
-        #except AttributeError:
-        #    self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
+        try:
+            self.state = fx(self.state, dt, self.control)
+        except AttributeError:
+            self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
             
-        #self.pos[0] = int(self.state[0])
-        #self.pos[1] = int(self.state[1])
-        #self.angle = int(np.degrees(self.state[2]))
+        self.pos[0] = int(self.state[0])
+        self.pos[1] = int(self.state[1])
+        self.angle = int(np.degrees(self.state[2]))
         
         self.ukf.predict(fx_args=self.control, dt=dt)
         
@@ -356,7 +358,7 @@ class Node(Widget):
                               'direction':data[b*3+TARGET_LIST_UPDATE_DIRECTION],
                               'bin':data[b*3+TARGET_LIST_UPDATE_BIN]}
                     self.target_list.append(target)
-            #print self.target_list
+            print self.target_list
             
             #If we are off of manual, motion is determined by neighbors
             if (not self.manual):

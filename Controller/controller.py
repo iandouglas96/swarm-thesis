@@ -1,7 +1,7 @@
 #set our main window size
 #have to do this first
 from kivy.config import Config
-Config.set('graphics', 'width', '1200')
+Config.set('graphics', 'width', '900')
 Config.set('graphics', 'height', '500')
 
 from constants import *

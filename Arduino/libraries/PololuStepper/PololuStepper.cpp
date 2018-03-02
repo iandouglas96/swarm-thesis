@@ -36,7 +36,13 @@ void PololuStepper::setSpeed(int speed ) {
 //Note: due to rounding error, may not return the exact value
 //	given originally to setSpeed()
 int PololuStepper::getSpeed(void) {
-	return (COUNT_OVERFLOW / period)*digitalRead(dirPin);
+    if (period == 0) {
+        return 0;
+    } else if (digitalRead(dirPin)) {
+        return (COUNT_OVERFLOW / period);
+    } else {
+        return -(COUNT_OVERFLOW / period);
+    }
 }
 
 //This function should be regularly called at some set frequency

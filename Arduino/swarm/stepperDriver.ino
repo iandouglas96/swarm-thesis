@@ -28,6 +28,9 @@ void setSpeeds(int speedR, int speedL) {
   StepperR.setSpeed(speedR);
   //Negative because stepper connected backwards
   StepperL.setSpeed(-speedL);
+
+  Serial.println(StepperR.getSpeed());
+  Serial.println(-StepperL.getSpeed());
 }
 
 //Call the step() functions at regular timing interval (defined by IntervalTimer)
