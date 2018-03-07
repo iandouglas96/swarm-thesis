@@ -1,7 +1,7 @@
 #set our main window size
 #have to do this first
 from kivy.config import Config
-Config.set('graphics', 'width', '900')
+Config.set('graphics', 'width', '1200')
 Config.set('graphics', 'height', '500')
 
 from constants import *
@@ -16,7 +16,7 @@ from serialinterface import SerialInterface
 
 from nodelist import *
 from editdatapanel import *
-from nodesensordisplay import *
+from nodesensordisplay import * 
 from motioncapture import *
 
 class Controller(BoxLayout):
@@ -34,8 +34,7 @@ class Controller(BoxLayout):
         self.ids.data_panel.disp_node(node)
 
     def update_callback(self):
-        #self.ids.sensor_disp.update()
-        pass
+        self.ids.sensor_disp.trigger_new_data()
 
     def set_visible_node(self, visible):
         if (not visible):

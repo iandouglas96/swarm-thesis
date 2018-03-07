@@ -27,12 +27,12 @@ def move(x, u, dt, l):
     else:
         Vl = 0
     if (u[1] != 0):    
-        Vr = 1024//abs(int(u[1]))*np.sign(u[0])
+        Vr = 1024//abs(int(u[1]))*np.sign(u[1])
         Vr = 1024.0/Vr
     else:
         Vr = 0
         
-    print str(Vl) + "  " + str(Vr)
+    #print str(Vl) + "  " + str(Vr)
     
     #scale appropriately to screen
     Vl = 0.2*Vl
@@ -40,13 +40,13 @@ def move(x, u, dt, l):
 
     #special case for straight motion
     if (Vl == Vr):
-        return np.array([x[0]+Vl*dt*np.cos(x[2]), x[1]+Vl*dt*np.sin(x[2]), x[2]])
+        return np.array([x[0]+Vl*dt*np.cos(-x[2]), x[1]+Vl*dt*np.sin(-x[2]), x[2]])
     
     R = (l/4)*(Vl+Vr)/(Vl-Vr)
     omega = (Vl-Vr)/l
     
     #calculate ICC position
-    ICC = np.array([x[0]-R*np.sin(x[2]), x[1]+R*np.cos(x[2])])
+    ICC = np.array([x[0]-R*np.sin(-x[2]), x[1]+R*np.cos(-x[2])])
 
     #calculate the new transformed position
     rotation = np.array([[np.cos(omega*dt), -np.sin(omega*dt), 0],
@@ -87,7 +87,7 @@ def Hx(x, landmarks):
     for lmark in landmarks:
         px, py = lmark
         dist = np.sqrt((px - x[0])**2 + (py - x[1])**2)
-        angle = np.arctan2(py - x[1], px - x[0])
+        angle = np.arctan2(x[1] - py, px - x[0])
         hx.extend([dist, normalize_angle(angle - x[2])])
     return np.array(hx)
     
@@ -251,7 +251,7 @@ class Node(Widget):
                                     subtract=residual_x)
 
         self.ukf = UKF(dim_x=3, fx=fx, hx=Hx,
-                  dt=1./60, points=points, x_mean_fn=state_mean, 
+                  dt=1./30, points=points, x_mean_fn=state_mean, 
                   z_mean_fn=z_mean, residual_x=residual_x, 
                   residual_z=residual_h)
         
@@ -260,7 +260,7 @@ class Node(Widget):
         self.ukf.P = np.diag([5, 5, 0.1])
         #sensor noise
         self.ukf.R = np.array([10**2, 
-                         0.05**2])
+                         0.1**2])
         #process noise                 
         self.ukf.Q = np.diag([0.01, 0.01, 0.01])
         
@@ -268,14 +268,14 @@ class Node(Widget):
         self.ukf_predict(0.0001)
         
     def ukf_predict(self, dt):
-        try:
-            self.state = fx(self.state, dt, self.control)
-        except AttributeError:
-            self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
+        #try:
+        #    self.state = fx(self.state, dt, self.control)
+        #except AttributeError:
+        #    self.state = [self.pos[0], self.pos[1], np.radians(self.angle)]
             
-        self.pos[0] = int(self.state[0])
-        self.pos[1] = int(self.state[1])
-        self.angle = int(np.degrees(self.state[2]))
+        #self.pos[0] = int(self.state[0])
+        #self.pos[1] = int(self.state[1])
+        #self.angle = int(np.degrees(self.state[2]))
         
         self.ukf.predict(fx_args=self.control, dt=dt)
         
@@ -285,6 +285,7 @@ class Node(Widget):
         
     def ukf_update(self, z, l_pos):
         self.ukf.update(z, hx_args=l_pos,)
+        #print self.ukf.P
 
     def process_targets(self):
         #figure out force vector

@@ -6,6 +6,7 @@ from constants import *
 import math
 import numpy as np
 from scipy.optimize import minimize
+import rmsd
 
 class NodeSensorDisplay(Widget):
     def __init__(self, **kwargs):
@@ -16,6 +17,7 @@ class NodeSensorDisplay(Widget):
         
     # process points to fit pts1 onto pts2
     # uses algorithm described here: http://nghiaho.com/?page_id=671
+    # also https://en.wikipedia.org/wiki/Kabsch_algorithm
     def normalize_pts(self, pts1, pts2):
         #print pts1
         A = pts1[:, 0:2]
@@ -26,41 +28,23 @@ class NodeSensorDisplay(Widget):
         N = A.shape[0]  # total points
 
         # find centroids
-        centroid_A = np.mean(A, axis=0)
-        centroid_B = np.mean(B, axis=0)
+        centroid_A = rmsd.centroid(A)
+        centroid_B = rmsd.centroid(B)
 
         # centre the points
-        AA = A - np.tile(centroid_A, (N, 1))
-        BB = B - np.tile(centroid_B, (N, 1))
-
-        H = np.dot(np.transpose(AA), BB)
-        U, S, Vt = np.linalg.svd(H)
-
-        # rotation matrix
-        R = np.dot(Vt.T, U.T)
-
-        # special reflection case
-        if np.linalg.det(R) > 0:
-            #print "Reflection detected"
-            Vt[1, :] *= -1
-            R = np.dot(Vt.T, U.T)
-
-        # calculate transposition
-        t = np.dot(-R, centroid_A.T) + centroid_B.T
-
+        AA = A - centroid_A
+        BB = B - centroid_B
+        
+        #get optimal rotation matrix
+        R = rmsd.kabsch(AA, BB)
         # Apply transformation
-        A2 = np.dot(R, A.T) + np.tile(t[:, None], (1, N))
-        A2 = A2.T
-
-        pts1[:, 0:2] = A2
+        AA1 = np.dot(AA, R)
+        angle1 = math.atan2(R[1][0], R[1][1])
+        
+        pts1[:, 0:2] = AA1 + centroid_B
         # rotate the rotations
-        pts1[:, 2] += math.atan2(R[0][1], R[0][0])
-
-        # calculate the error
-        err = A2 - B
-        err = np.multiply(err, err)
-        err = np.sum(err)
-        return err
+        pts1[:, 2] -= angle1
+        return rmsd.rmsd(AA1, BB)
 
     # p is of the following format
     # p[n][v]
@@ -86,7 +70,7 @@ class NodeSensorDisplay(Widget):
         #y-component
         D[:,:,1] = np.multiply(px_outer, sin_mat[:, np.newaxis])
         D[:,:,1] += np.multiply(py_outer, cos_mat[:, np.newaxis])
-
+        
         #remove data that we don't have sensor data for
         D = np.multiply(D, args[0].any(axis = 2)[:, :, np.newaxis])
         # Find all differences
@@ -116,17 +100,19 @@ class NodeSensorDisplay(Widget):
 
                 # format stuff nicely and output
                 self.pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
-                if (hasattr(self, 'last_pts')):
+                
+                #print self.pts
+                
+                #if (hasattr(self, 'last_pts')):
                     #align points to be closest to the last
-                    self.normalize_pts(self.pts, self.last_pts)
+                #    self.normalize_pts(self.pts, self.last_pts)
 
                 #update nodes with postitions and angles
                 all_reports_heard = True
+                
                 for i in range(0, len(self.node_list)):
                     if (len(self.node_list[i].target_list) == 0):
                         all_reports_heard = False
-                    
-                    print self.pts[i]
                     
                     for n in self.node_list:
                         if (FREQUENCIES[n.freq] == i):
@@ -142,7 +128,7 @@ class NodeSensorDisplay(Widget):
                     for n in self.node_list:
                         n.ukf_init()
                     self.timer.cancel()
-                    self.timer = Clock.schedule_interval(self.update, 1./60)
+                    self.timer = Clock.schedule_interval(self.update, 1./30)
                     
                 self.last_pts = np.copy(self.pts)
         else:
@@ -161,3 +147,7 @@ class NodeSensorDisplay(Widget):
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][0] = dist*np.cos(np.radians(adj_n['direction']))
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][1] = dist*np.sin(np.radians(adj_n['direction']))
         return adj
+        
+    #placeholder, want to extend in subclass
+    def trigger_new_data(self):
+        pass

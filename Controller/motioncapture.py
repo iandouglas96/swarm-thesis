@@ -4,6 +4,7 @@ from kivy.graphics.texture import Texture
 
 from constants import *
 from nodesensordisplay import NodeSensorDisplay
+from scipy.optimize import minimize
 
 import csv
 import math
@@ -21,6 +22,7 @@ class MotionCapture(Image, NodeSensorDisplay):
     def __init__(self, **kwargs):
         super(MotionCapture, self).__init__(**kwargs)
         self.logging = False
+        self.min_pts = np.zeros(0)
         #load calibration constants for camera
         self.camera_calib_mtx = np.load('camera_calib_mtx.npy')
         self.camera_calib_dist = np.load('camera_calib_dist.npy')
@@ -60,13 +62,14 @@ class MotionCapture(Image, NodeSensorDisplay):
             self.node_list.append(node['data'])
         #print self.node_list
         
-    def draw_robot(self, pos, color, frame):
+    def draw_robot(self, pos, color, num, frame):
         #project lines of detected robot locations onto the screen for rendering
         pts, jac = cv2.projectPoints(robot_arrow, np.array([0,0,pos[2]], np.float32),
                                      np.array([pos[0],pos[1],220], np.float32),
                                      self.camera_calib_mtx, self.camera_calib_dist)
         #draw robots on screen
         frame = cv2.arrowedLine(frame, tuple(pts[0].ravel()), tuple(pts[1].ravel()), color, 5, tipLength=0.3)
+        cv2.putText(frame, str(num), tuple(pts[0].ravel()), cv2.FONT_HERSHEY_SIMPLEX, 1, color, thickness=3)
         
     def track_robots(self, frame):
         #detect the corners and ids of all the aruco markers
@@ -111,26 +114,39 @@ class MotionCapture(Image, NodeSensorDisplay):
             #detect robots
             measured_pos = self.track_robots(frame)
                 
-            #draw calculated robot positions
+            #get calculated robot positions
             calculated_pos = np.zeros([len(self.node_list), 3])
+            
             for n in self.node_list:
                 #expects nodes to be numbered 2,3,4...
                 calculated_pos[n.node_id-2] = [n.pos[0]/5., n.pos[1]/5., -np.radians(n.angle)]
-            
+                
+            min_pts = np.copy(self.min_pts)
             if (len(calculated_pos) == len(measured_pos)): 
                 #fit points onto eachother
-                err = self.normalize_pts(calculated_pos, measured_pos)
-                if (self.logging):
-                    #find difference b/w known and calculated states
-                    difference = calculated_pos-measured_pos
-                    #log difference data to csv (like a boss)
-                    self.csv_writer.writerow(difference.flatten())
+                err1 = self.normalize_pts(calculated_pos, measured_pos)
+                if (len(measured_pos) == len(self.min_pts)):
+                    err2 = self.normalize_pts(min_pts, measured_pos)
+                    if (self.logging):
+                        #find difference b/w known and calculated states
+                        difference_filter = calculated_pos-measured_pos
+                        difference_min = min_pts-measured_pos
+                        #log difference data to csv (like a boss)
+                        self.csv_writer.writerow(np.append(difference_filter.flatten(),difference_min.flatten()))
                 
             #actually draw stuff
+            i = 0
             for p in calculated_pos:
-                self.draw_robot(p, (255,0,0), frame)
+                self.draw_robot(p, (255,0,0), i, frame)
+                i += 1
+            i = 0
             for p in measured_pos:   
-                self.draw_robot(p, (0,255,0), frame)
+                self.draw_robot(p, (0,255,0), i, frame)
+                i += 1
+            i=0
+            for p in min_pts:   
+                self.draw_robot(p, (0,0,255), i, frame)
+                i += 1
             
             # convert OpenCV image to Kivy texture
             buf1 = cv2.flip(frame, 0)
@@ -139,3 +155,20 @@ class MotionCapture(Image, NodeSensorDisplay):
             image_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
             # display image from the texture
             self.texture = image_texture
+            
+    #run minimization algorithm when we get new data 
+    #comment out if speed is desired       
+    def trigger_new_data(self):
+        Dp = self.gen_adjacencies()
+
+        if (Dp.any()):
+            # try to minimize error
+            x0 = np.zeros((Dp.shape[0], 3))
+            #args has to be a tuple, because of weird numpy problems
+            out = minimize(fun=self.sum_errors, x0=x0, args=(Dp,), method='SLSQP')
+            # format stuff nicely and output
+            self.min_pts = np.reshape(out.x, (out.x.shape[0]/3, 3))
+            #scale things to be in the right coordinate system
+            self.min_pts[:,2] *= -1
+            self.min_pts[:,0:2] /= 5.
+            

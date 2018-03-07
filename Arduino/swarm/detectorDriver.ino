@@ -104,9 +104,12 @@ TARGET * targetScan() {
 void parseScan() {
   //Scan through each bin
   for (int freq=0; freq<NUM_FREQ_BINS; freq++) {
-    for (int angle=0; angle<360; angle += SERVO_SPEED) {
-      int binNum = angle/SERVO_SPEED;
+    for (int angle_raw=-90; angle_raw<(360-90); angle_raw += SERVO_SPEED) {
+      int binNum = (angle_raw+90)/SERVO_SPEED;
       float bin = RawData[binNum][freq];
+
+      int angle = angle_raw;
+      if (angle < 0) angle += 360;
       //Are we above the noise floor?
 
       /*if (freq==0) {
