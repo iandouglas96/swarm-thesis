@@ -111,8 +111,24 @@ class Node(Widget):
         #wheelbase width
         l = 55.   
 
-        Vl = 0.2*float(self.linear_v + self.angular_v)
-        Vr = 0.2*float(self.linear_v - self.angular_v)
+        Vl = float(self.linear_v + self.angular_v)
+        Vr = float(self.linear_v - self.angular_v)
+
+        #simulate rounding error created by speed timing algorithm
+        if (Vl != 0):
+            Vl = 1024//abs(int(Vl))*np.sign(Vl)
+            Vl = 1024.0/Vl
+        else:
+            Vl = 0
+        if (Vr != 0):    
+            Vr = 1024//abs(int(Vr))*np.sign(Vr)
+            Vr = 1024.0/Vr
+        else:
+            Vr = 0
+
+        #scale appropriately to screen
+        Vl = 0.2*Vl
+        Vr = 0.2*Vr
         
         if (Vl == Vr):
             #the world is simpler for straight motion

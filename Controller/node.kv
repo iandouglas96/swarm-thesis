@@ -1,3 +1,5 @@
+#:kivy 1.10.0
+
 <Node>:
   n_width:50
   angle: 0
@@ -8,18 +10,18 @@
     Rotate:
       axis: 0,0,1
       angle: (self.angle)
-      origin: (1000+self.pos[0]+self.n_width/2, 400+self.pos[1]+self.n_width/2)
+      origin: (1000+self.pos[0]+self.n_width/2, 400-self.pos[1]+self.n_width/2)
     Color:
       rgba: self.color
     Rectangle:
       size: (self.n_width,self.n_width)
-      pos: (self.pos[0]+1000, 400+self.pos[1])
+      pos: (self.pos[0]+1000, 400-self.pos[1])
     Color:
       rgba: (0, 0, 0, 0.2)
     Rectangle:
       size: (self.n_width/2,self.n_width)
-      pos: (self.pos[0]+1000, 400+self.pos[1])
+      pos: (self.pos[0]+1000, 400-self.pos[1])
     PopMatrix
   Label:
     text: str(root.node_id)
-    pos: (1000+root.pos[0]-root.n_width/2, 400+root.pos[1]-root.n_width/2)
+    pos: (1000+root.pos[0]-root.n_width/2, 400-root.pos[1]-root.n_width/2)
