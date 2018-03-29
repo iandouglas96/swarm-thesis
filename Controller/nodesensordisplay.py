@@ -2,6 +2,7 @@ from kivy.uix.widget import Widget
 from kivy.clock import Clock
 
 from constants import *
+from runpreset import RunPreset
 
 import math
 import numpy as np
@@ -147,7 +148,13 @@ class NodeSensorDisplay(Widget):
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][0] = dist*np.cos(np.radians(adj_n['direction']))
                 adj[FREQUENCIES[n.freq]][adj_n['bin']][1] = dist*np.sin(np.radians(adj_n['direction']))
         return adj
-        
-    #placeholder, want to extend in subclass
+
+    def run_preset(self):
+        #start another thread to run series of instructions
+        RunPreset(self.node_list).start()
+    
+    #placeholders, want to extend in subclass
     def trigger_new_data(self):
         pass
+    def toggle_logging(self):
+        print "Logging not supported without Motion Capture"

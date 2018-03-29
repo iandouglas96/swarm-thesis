@@ -8,3 +8,19 @@
     Rectangle:
       size: self.size
       pos: self.pos
+  BoxLayout:
+    orientation: 'horizontal'
+    Button:
+      id: toggle_logging_button
+      height: '40dp'
+      size_hint_y: None
+      size_hint_x: None
+      text: 'Log'
+      on_release: root.toggle_logging()
+    Button:
+      id: run_preset_button
+      height: '40dp'
+      size_hint_y: None
+      size_hint_x: None
+      text: 'Run'
+      on_release: root.run_preset()
