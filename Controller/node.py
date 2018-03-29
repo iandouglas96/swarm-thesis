@@ -235,14 +235,17 @@ class Node(Widget):
             self.control[0] = r_speed
             self.control[1] = l_speed
 
-            #payload, assemble!
-            args = struct.pack(FORMATS[DRIVE_COMMAND], r_speed, l_speed)
-
-            #send the command
-            self.comm.send_command(self.current_id, DRIVE_COMMAND, args)
+            self.send_motion_command()
 
             #slice so we copy values instead of ref
             self.old_matrix = self.key_matrix[:]
+    
+    def send_motion_command(self):
+        #payload, assemble!
+        args = struct.pack(FORMATS[DRIVE_COMMAND], self.control[0], self.control[1])
+
+        #send the command
+        self.comm.send_command(self.current_id, DRIVE_COMMAND, args)
             
     #Functions relating to UKF filtering of robot position
     def ukf_init(self):
