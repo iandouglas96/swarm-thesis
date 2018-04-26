@@ -21,8 +21,8 @@ AudioConnection          patchCord2(adcs1, 1, fft[1], 0);
 #define SERVO_SCALE_FACTOR 0.95
 
 //Define the location of bins on the FFT
-#define NUM_FREQ_BINS 3
-const int FREQ_BINS[NUM_FREQ_BINS] = {23, 28, 33};
+#define NUM_FREQ_BINS 5
+const int FREQ_BINS[NUM_FREQ_BINS] = {23, 28, 33, 37, 42};
 
 float RawData[(360/SERVO_SPEED)+1][NUM_FREQ_BINS];
 
@@ -67,8 +67,8 @@ TARGET * targetScan() {
     //For debugging
     /*Serial.print("FFT: ");
     float n;
-    for (int i=0; i<40; i++) {
-      n = fft[0].read(i);
+    for (int i=20; i<50; i++) {
+      n = fft[1].read(i);
       if (n >= 0.01) {
         Serial.print(n);
         Serial.print(" ");

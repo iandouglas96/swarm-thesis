@@ -13,7 +13,7 @@ class NodeField(FloatLayout):
 
         #generate a bunch of robots
         self.node_list = []
-        for n in range(2,7):
+        for n in range(4,7):
             #create and configure nodes
             node = Node(id_num=n, freq = 1000+(n-2)*200, field=self)
             self.add_widget(node)
