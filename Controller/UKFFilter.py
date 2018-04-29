@@ -23,7 +23,7 @@ from filterpy.stats import logpdf
 import math
 import numpy as np
 from numpy import eye, zeros, dot, isscalar, outer
-from scipy.linalg import inv, cholesky
+from scipy.linalg import inv, cholesky, LinAlgError
 
 class UnscentedKalmanFilter(object):
     # pylint: disable=too-many-instance-attributes
@@ -290,7 +290,13 @@ class UnscentedKalmanFilter(object):
             UT = unscented_transform
 
         # calculate sigma points for given mean and covariance
-        sigmas = self.points_fn.sigma_points(self.x, self.P)
+        try:
+            sigmas = self.points_fn.sigma_points(self.x, self.P)
+        except LinAlgError as err:
+            print("Error")
+            print(self.x)
+            print(self.P)
+            exit()
 
         for i in range(self._num_sigmas):
             self.sigmas_f[i] = self.fx(sigmas[i], dt, *fx_args)

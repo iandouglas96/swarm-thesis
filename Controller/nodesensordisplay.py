@@ -142,8 +142,8 @@ class NodeSensorDisplay(Widget):
         #create a new array to hold the data
         #print len(self.node_list)
         #use this version for final work
-        #adj = np.zeros((len(self.node_list),len(self.node_list),2))
-        adj = np.zeros((6,6,2))
+        adj = np.zeros((len(self.node_list),len(self.node_list),2))
+        #adj = np.zeros((6,6,2))
         for n in self.node_list:
             for adj_n in n.target_list:
                 dist = 5.*(adj_n['magnitude'])

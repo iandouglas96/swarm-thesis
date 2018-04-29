@@ -263,9 +263,9 @@ class Node(Widget):
         self.ukf.P = np.diag([5, 5, 0.1])
         #sensor noise
         self.ukf.R = np.array([10**2, 
-                         0.1**2])
+                         0.15**2])
         #process noise                 
-        self.ukf.Q = np.diag([0.01, 0.01, 0.01])
+        self.ukf.Q = np.diag([0.01, 0.01, 0.02])
         
         #Run predict step to initialize.  Otherwise if we got a measurement before predict, we would crash
         self.ukf_predict(0.0001)

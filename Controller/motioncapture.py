@@ -31,7 +31,7 @@ class MotionCapture(Image, NodeSensorDisplay):
         self.parameters =  cv2.aruco.DetectorParameters_create()
         #aruco board generator
         self.aruco_boards = []
-        for i in range(0,3):
+        for i in range(0,5):
             self.aruco_boards.append(cv2.aruco.Board_create([np.array([[m_sep/2, m_width/2 ,0.],[m_sep/2+m_width, m_width/2, 0.],[m_sep/2+m_width, -m_width/2, 0.],[m_sep/2, -m_width/2, 0.]], dtype=np.float32),
                                 np.array([[-(m_sep/2+m_width), m_width/2 ,0.],[-m_sep/2, m_width/2, 0.],[-m_sep/2, -m_width/2, 0.],[-(m_sep/2+m_width), -m_width/2, 0.]], dtype=np.float32)], 
                                 self.aruco_dict, np.array([i*2,i*2+1])))
