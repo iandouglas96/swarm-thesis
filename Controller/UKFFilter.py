@@ -256,7 +256,7 @@ class UnscentedKalmanFilter(object):
 
 
     def predict(self, dt=None,  UT=None, fx_args=()):
-        r""" Performs the predict step of the UKF. On return, self.x and
+        """ Performs the predict step of the UKF. On return, self.x and
         self.P contain the predicted state (x) and covariance (P). '
 
         Important: this MUST be called before update() is called for the first
@@ -290,13 +290,15 @@ class UnscentedKalmanFilter(object):
             UT = unscented_transform
 
         # calculate sigma points for given mean and covariance
-        try:
-            sigmas = self.points_fn.sigma_points(self.x, self.P)
-        except LinAlgError as err:
-            print("Error")
-            print(self.x)
-            print(self.P)
-            exit()
+        self.P = (self.P + self.P.T)/2
+
+        #try:
+        sigmas = self.points_fn.sigma_points(self.x, self.P)
+        #except LinAlgError:
+        #    #this is a hack
+        #    print("covariance broken...resetting")
+        #    self.P = np.diag([5, 5, 0.1])
+        #    sigmas = self.points_fn.sigma_points(self.x, self.P)
 
         for i in range(self._num_sigmas):
             self.sigmas_f[i] = self.fx(sigmas[i], dt, *fx_args)

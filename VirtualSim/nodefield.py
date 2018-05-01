@@ -13,7 +13,7 @@ class NodeField(FloatLayout):
 
         #generate a bunch of robots
         self.node_list = []
-        for n in range(4,7):
+        for n in range(2,7):
             #create and configure nodes
             node = Node(id_num=n, freq = 1000+(n-2)*200, field=self)
             self.add_widget(node)
@@ -44,9 +44,11 @@ class NodeField(FloatLayout):
                 dist = math.sqrt((n.pos[0]-node.pos[0])**2+(n.pos[1]-node.pos[1])**2)/5.
                 angle = -(math.atan2(n.pos[1]-node.pos[1], n.pos[0]-node.pos[0])-math.radians(node.angle))
                 #add error
-                dist += np.random.uniform(-5, 5)
-                angle += np.random.uniform(-0.1, 0.1)
+                dist += np.random.normal(5, 5)
+                angle += np.random.normal(0.05, 0.1)
                 list.append({'distance':dist, 'direction':angle, 'bin':FREQUENCIES[n.freq]})
+        
+        list.append({'distance':np.random.uniform(40,60), 'direction':np.random.uniform(0., 6.), 'bin':np.random.randint(0,4)})
         return list
 
     def update(self, dt):

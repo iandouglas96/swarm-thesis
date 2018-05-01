@@ -263,9 +263,9 @@ class Node(Widget):
         self.ukf.P = np.diag([5, 5, 0.1])
         #sensor noise
         self.ukf.R = np.array([10**2, 
-                         0.15**2])
+                         0.1**2])
         #process noise                 
-        self.ukf.Q = np.diag([0.01, 0.01, 0.02])
+        self.ukf.Q = np.diag([0.01, 0.01, 0.01])
         
         #Run predict step to initialize.  Otherwise if we got a measurement before predict, we would crash
         self.ukf_predict(0.0001)
@@ -345,8 +345,10 @@ class Node(Widget):
             dist = 5.*target['magnitude']
             relevant_node = filter(lambda node: FREQUENCIES[node['data'].freq] == target['bin'], node_list)
             if (len(relevant_node) > 0):
-                measurements.extend([dist, -np.radians(target['direction'])])
-                landmark_pos = np.vstack([landmark_pos, relevant_node[0]['data'].ukf.x[0:2]])
+                #make sure that we don't treat ourselves as another node
+                if (relevant_node[0]['data'].node_id != self.node_id):
+                    measurements.extend([dist, -np.radians(target['direction'])])
+                    landmark_pos = np.vstack([landmark_pos, relevant_node[0]['data'].ukf.x[0:2]])
          
         if (len(measurements) > 0):     
             self.ukf_update(measurements, landmark_pos)

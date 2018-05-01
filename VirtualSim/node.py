@@ -35,8 +35,17 @@ class Node(Widget):
         #reference back to the node field
         self.field = kwargs['field']
 
-        self.pos = [500+np.random.randint(300), 500+np.random.randint(300)]
-        self.angle = np.random.randint(360)
+        if (self.node_id == 2):
+            self.pos = [300, 500]
+        elif (self.node_id == 3):
+            self.pos = [500, 500]
+        elif (self.node_id == 4):
+            self.pos = [300, 300]
+        elif (self.node_id == 5):
+            self.pos = [500, 300]
+        elif (self.node_id == 6):
+            self.pos = [400, 400]
+        self.angle = 90
         self.fxu = np.array([[self.pos[0]], [self.pos[1]], [np.radians(self.angle)]])
 
         #Setup scan with initial random delay to be asynchronous

@@ -69,7 +69,7 @@ class MotionCapture(Image, NodeSensorDisplay):
                                      self.camera_calib_mtx, self.camera_calib_dist)
         #draw robots on screen
         frame = cv2.arrowedLine(frame, tuple(pts[0].ravel()), tuple(pts[1].ravel()), color, 5, tipLength=0.3)
-        cv2.putText(frame, str(num), tuple(pts[0].ravel()), cv2.FONT_HERSHEY_SIMPLEX, 1, color, thickness=3)
+        cv2.putText(frame, str(num + 2), tuple(pts[0].ravel()), cv2.FONT_HERSHEY_SIMPLEX, 1, color, thickness=3)
         
     def track_robots(self, frame):
         #detect the corners and ids of all the aruco markers
