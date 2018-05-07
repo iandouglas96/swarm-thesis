@@ -60,13 +60,14 @@ class RunPreset(threading.Thread):
         print "Formation 2 complete"
         '''
 
+        
         print "Running formation 3: Complex motion"
         print "Rotate"
-        self.send_command(2, 100, -100)
-        self.send_command(3, -100, 100)
-        self.send_command(4, 100, -100)
-        self.send_command(5, -100, 100)
-        time.sleep(2)
+        self.send_command(2, 50, -50)
+        self.send_command(3, -50, 50)
+        self.send_command(4, 50, -50)
+        self.send_command(5, -50, 50)
+        time.sleep(4)
         print "Move out"
         self.send_command(2, 100, 100)
         self.send_command(3, 100, 100)
@@ -80,11 +81,11 @@ class RunPreset(threading.Thread):
         self.send_command(5, -100, -100)
         time.sleep(5)
         print "Rotate back"
-        self.send_command(2, -100, 100)
-        self.send_command(3, 100, -100)
-        self.send_command(4, -100, 100)
-        self.send_command(5, 100, -100)
-        time.sleep(2)
+        self.send_command(2, -50, 50)
+        self.send_command(3, 50, -50)
+        self.send_command(4, -50, 50)
+        self.send_command(5, 50, -50)
+        time.sleep(4)
         print "All forward"
         self.send_command(2, 100, 100)
         self.send_command(3, 100, 100)
@@ -93,12 +94,12 @@ class RunPreset(threading.Thread):
         self.send_command(6, 100, 100)
         time.sleep(10)
         print "Turn"
-        self.send_command(2, 100, -100)
-        self.send_command(3, 100, -100)
-        self.send_command(4, 100, -100)
-        self.send_command(5, 100, -100)
-        self.send_command(6, 100, -100)
-        time.sleep(2)
+        self.send_command(2, 50, -50)
+        self.send_command(3, 50, -50)
+        self.send_command(4, 50, -50)
+        self.send_command(5, 50, -50)
+        self.send_command(6, 50, -50)
+        time.sleep(4)
         print "All forward"
         self.send_command(2, 100, 100)
         self.send_command(3, 100, 100)
@@ -113,6 +114,7 @@ class RunPreset(threading.Thread):
         self.send_command(6, 0, 0)
 
         print "Formation 3 complete"
+        
 
     def run(self):
         #run through sequence of commands, then finish.

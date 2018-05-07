@@ -262,8 +262,8 @@ class Node(Widget):
         self.ukf.x = np.array([self.pos[0],self.pos[1],np.radians(self.angle)])
         self.ukf.P = np.diag([5, 5, 0.1])
         #sensor noise
-        self.ukf.R = np.array([10**2, 
-                         0.1**2])
+        self.ukf.R = np.array([15**2, 
+                         0.15**2])
         #process noise                 
         self.ukf.Q = np.diag([0.01, 0.01, 0.01])
         
